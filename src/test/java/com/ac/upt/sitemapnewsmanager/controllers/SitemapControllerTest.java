@@ -43,7 +43,7 @@ public class SitemapControllerTest {
     public void testAddSitemapEndpoint() throws Exception{
         Url sitemap = new Url("string");
         mockMvc.perform(post("/addSitemap").contentType(MediaType.APPLICATION_JSON).content("{\n" +
-                "  \"loc\": \"string\",\n" +
+                "  \"loc\": \"string\"\n" +
                 "}")).andExpect(status().isOk());
         verify(sitemapService, times(1)).addSitemap(sitemap);
     }
@@ -52,7 +52,7 @@ public class SitemapControllerTest {
     public void testUpdateSitemapEndpoint() throws Exception{
         Url sitemap = new Url("string");
         mockMvc.perform(put("/updateSitemap").contentType(MediaType.APPLICATION_JSON).content("{\n" +
-                "  \"loc\": \"string\",\n" +
+                "  \"loc\": \"string\"\n" +
                 "}")).andExpect(status().isOk());
         verify(sitemapService, times(1)).updateSitemap(sitemap);
     }

@@ -96,13 +96,13 @@ public class SitemapServiceTest {
 
     @Test
     public void testGetSitemapNewsHappyPath(){
-        String stringResponse = "sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">" +
+        String stringResponse = "<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
                 "<sitemap>\n" +
                 "<loc>string</loc>\n" +
                 "</sitemap>\n" +
                 "</sitemapindex>";
         when(sitemapNewsClient.getStringResponse()).thenReturn(stringResponse);
-        List<Url> expectedResponse= Arrays.asList(new Url("string"));
+        List<Url> expectedResponse= List.of(new Url("string"));
         List<Url> actualResponse = sitemapService.getSitemapNews();
         assertEquals(actualResponse, expectedResponse);
     }
@@ -123,13 +123,13 @@ public class SitemapServiceTest {
     @Test
     public void testStartSitemapNewsMappingHappyPath(){
         sitemapService.setMappingRunning(Boolean.FALSE);
-        String stringResponse = "sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">" +
+        String stringResponse = "<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
                 "<sitemap>\n" +
                 "<loc>string</loc>\n" +
                 "</sitemap>\n" +
-                "</sitemapindex>";;
+                "</sitemapindex>";
         when(sitemapNewsClient.getStringResponse()).thenReturn(stringResponse);
-        List<Url> expectedSitemaps= Arrays.asList(new Url("string"));
+        List<Url> expectedSitemaps= List.of(new Url("string"));
         sitemapService.startSitemapNewsMapping();
         verify(urlRepository, times(1)).saveAll(expectedSitemaps);
     }
