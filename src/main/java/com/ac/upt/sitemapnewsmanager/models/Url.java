@@ -13,11 +13,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "url", schema = "news")
+@Table(name = "url", schema = "sitemaps")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Url {
 
     @Id
     private String loc;
-    private String lastmod;
 }
