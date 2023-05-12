@@ -1,5 +1,5 @@
 resource "aws_instance" "sitemap-news-manager-ec2" {
-  ami           = "ami-0f51be0cf2e87b06c"
+  ami           = "ami-089e1275464c272ba"
   instance_type = "t2.micro"
   key_name = "emp"
   vpc_security_group_ids = ["sg-02c8a7439bd6661ae"]
