@@ -5,8 +5,6 @@ import com.ac.upt.sitemapnewsmanager.exceptions.SitemapNotFoundException;
 import com.ac.upt.sitemapnewsmanager.models.Url;
 import com.ac.upt.sitemapnewsmanager.repositories.UrlRepository;
 import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
