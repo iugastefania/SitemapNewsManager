@@ -7,6 +7,6 @@ resource "aws_instance" "sitemap-news-manager-ec2" {
 }
 
 resource "aws_iam_instance_profile" "ec2-profile" {
-  name = "ec2-profile-2"
+  name = "ec2-profile"
   role = aws_iam_role.ec2-role.name
 }

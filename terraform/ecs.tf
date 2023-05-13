@@ -1,5 +1,5 @@
 resource "aws_ecs_task_definition" "ecs-task-definition" {
-  family = "sitemap-news-manager-task-3"
+  family = "sitemap-news-manager-task"
   requires_compatibilities = ["EC2"]
 
   container_definitions = jsonencode([

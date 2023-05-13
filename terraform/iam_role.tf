@@ -1,5 +1,5 @@
 resource "aws_iam_role" "ec2-role" {
-  name = "ec2-role-3"
+  name = "ec2-role"
 
   # Terraform's "jsonencode" function converts a
   # Terraform expression result to valid JSON syntax.
@@ -18,7 +18,7 @@ resource "aws_iam_role" "ec2-role" {
   })
 }
 resource "aws_iam_policy_attachment" "ec2-policy-role"{
-  name = "ec2-attachment-3"
+  name = "ec2-attachment"
   roles = [aws_iam_role.ec2-role.name]
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
 }
