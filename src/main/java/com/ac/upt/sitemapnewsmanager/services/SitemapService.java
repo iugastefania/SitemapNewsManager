@@ -77,10 +77,9 @@ public class SitemapService {
         input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
         XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
         try {
-            List<Url> sitemaps = xmlMapper.readValue(stringResponse, new TypeReference<>() {
-            });
-            sitemaps = sitemaps.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
-            return sitemaps;
+            List<Url> articles = xmlMapper.readValue(stringResponse, new TypeReference<List<Url>>() {});
+            articles = articles.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
+            return articles;
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

@@ -5,6 +5,8 @@ import com.ac.upt.sitemapnewsmanager.exceptions.SitemapNotFoundException;
 import com.ac.upt.sitemapnewsmanager.models.Url;
 import com.ac.upt.sitemapnewsmanager.repositories.UrlRepository;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -100,7 +102,7 @@ public class SitemapServiceTest {
                 "</sitemap>\n" +
                 "</sitemapindex>";
         when(sitemapNewsClient.getStringResponse()).thenReturn(stringResponse);
-        List<Url> expectedResponse= List.of(new Url("string"));
+        List<Url> expectedResponse= Arrays.asList(new Url("string"));
         List<Url> actualResponse = sitemapService.getSitemapNews();
         assertEquals(actualResponse, expectedResponse);
     }
@@ -127,7 +129,7 @@ public class SitemapServiceTest {
                 "</sitemap>\n" +
                 "</sitemapindex>";
         when(sitemapNewsClient.getStringResponse()).thenReturn(stringResponse);
-        List<Url> expectedSitemaps= List.of(new Url("string"));
+        List<Url> expectedSitemaps= Arrays.asList(new Url("string"));
         sitemapService.startSitemapNewsMapping();
         verify(urlRepository, times(1)).saveAll(expectedSitemaps);
     }
