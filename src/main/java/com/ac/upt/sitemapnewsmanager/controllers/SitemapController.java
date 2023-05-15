@@ -20,6 +20,11 @@ public class SitemapController {
         Url sitemap = sitemapService.getSitemap(loc);
         return new ResponseEntity<>(sitemap, HttpStatus.OK);
     }
+    @PostMapping("/EndpointForTest")
+    public ResponseEntity<String> EndpointForTest(@RequestBody Url sitemap){
+        sitemapService.addSitemap(sitemap);
+        return new ResponseEntity<>("Sitemap with url: " + sitemap.toString() + " was added.", HttpStatus.OK);
+    }
     @PostMapping("/addSitemap")
     public ResponseEntity<String> addSitemap(@RequestBody Url sitemap){
         sitemapService.addSitemap(sitemap);
