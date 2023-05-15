@@ -1,7 +1,7 @@
 package com.ac.upt.sitemapnewsmanager.controllers;
 
-import com.ac.upt.sitemapnewsmanager.models.Url;
-import com.ac.upt.sitemapnewsmanager.services.SitemapService;
+import com.ac.upt.sitemapnewsmanager.models.Sitemap;
+import com.ac.upt.sitemapnewsmanager.services.ArticleService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,52 +23,52 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(SitemapController.class)
-public class SitemapControllerTest {
+@WebMvcTest(ArticleController.class)
+public class ArticleControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @MockBean
-    private SitemapService sitemapService;
+    private ArticleService articleService;
 
     @Test
-    public void testGetSitemapEndpoint() throws Exception{
+    public void testGetArticleEndpoint() throws Exception{
         String loc = "string";
-        Url sitemap = new Url("string");
-        when(sitemapService.getSitemap(any())).thenReturn(sitemap);
-        mockMvc.perform(get("/getSitemap").param("loc", loc)).andExpect(status().isOk()).andExpect(content().string(containsString("{\"loc\":\"string\"}")));
+        Sitemap sitemap = new Sitemap("string");
+        when(articleService.getArticle(any())).thenReturn(sitemap);
+        mockMvc.perform(get("/getArticle").param("loc", loc)).andExpect(status().isOk()).andExpect(content().string(containsString("{\"loc\":\"string\"}")));
 
     }
 
     @Test
-    public void testAddSitemapEndpoint() throws Exception{
-        Url sitemap = new Url("string");
-        mockMvc.perform(post("/addSitemap").contentType(MediaType.APPLICATION_JSON).content("{\n" +
+    public void testAddArticleEndpoint() throws Exception{
+        Sitemap sitemap = new Sitemap("string");
+        mockMvc.perform(post("/addArticle").contentType(MediaType.APPLICATION_JSON).content("{\n" +
                 "  \"loc\": \"string\"\n" +
                 "}")).andExpect(status().isOk());
-        verify(sitemapService, times(1)).addSitemap(sitemap);
+        verify(articleService, times(1)).addArticle(sitemap);
     }
 
     @Test
-    public void testUpdateSitemapEndpoint() throws Exception{
-        Url sitemap = new Url("string");
-        mockMvc.perform(put("/updateSitemap").contentType(MediaType.APPLICATION_JSON).content("{\n" +
+    public void testUpdateArticleEndpoint() throws Exception{
+        Sitemap sitemap = new Sitemap("string");
+        mockMvc.perform(put("/updateArticle").contentType(MediaType.APPLICATION_JSON).content("{\n" +
                 "  \"loc\": \"string\"\n" +
                 "}")).andExpect(status().isOk());
-        verify(sitemapService, times(1)).updateSitemap(sitemap);
+        verify(articleService, times(1)).updateArticle(sitemap);
     }
 
     @Test
-    public void testDeleteSitemapEndpoint() throws Exception{
-        Url sitemap = new Url("string");
+    public void testDeleteArticleEndpoint() throws Exception{
+        Sitemap sitemap = new Sitemap("string");
         String loc = sitemap.getLoc();
-        mockMvc.perform(delete("/deleteSitemap").contentType(MediaType.APPLICATION_JSON).content(loc)).andExpect(status().isOk());
-        verify(sitemapService, times(1)).deleteSitemap(loc);
+        mockMvc.perform(delete("/deleteArticle").contentType(MediaType.APPLICATION_JSON).content(loc)).andExpect(status().isOk());
+        verify(articleService, times(1)).deleteArticle(loc);
     }
 
     @Test
     public void testGetSitemapNewsEndpoint() throws Exception{
-        List<Url> urlList = Arrays.asList(new Url("string"));
-        when(sitemapService.getSitemapNews()).thenReturn(urlList);
+        List<Sitemap> sitemapList = Arrays.asList(new Sitemap("string"));
+        when(articleService.getSitemapNews()).thenReturn(sitemapList);
         mockMvc.perform(get("/getSitemapNews")).andExpect(content().string(containsString("[{\"loc\":\"string\"}]")));
     }
 

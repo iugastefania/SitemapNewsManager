@@ -1,8 +1,9 @@
 package com.ac.upt.sitemapnewsmanager.services;
 
 import com.ac.upt.sitemapnewsmanager.clients.SitemapNewsClient;
-import com.ac.upt.sitemapnewsmanager.exceptions.SitemapNotFoundException;
-import com.ac.upt.sitemapnewsmanager.models.Url;
+import com.ac.upt.sitemapnewsmanager.exceptions.ArticleNotFoundException;
+import com.ac.upt.sitemapnewsmanager.models.Sitemap;
+import com.ac.upt.sitemapnewsmanager.repositories.SitemapRepository;
 import com.ac.upt.sitemapnewsmanager.repositories.UrlRepository;
 import com.ctc.wstx.stax.WstxInputFactory;
 import com.ctc.wstx.stax.WstxOutputFactory;
@@ -22,7 +23,9 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class SitemapService {
+public class ArticleService {
+
+    SitemapRepository sitemapRepository;
 
     UrlRepository urlRepository;
 
@@ -39,47 +42,48 @@ public class SitemapService {
     private Boolean isMappingRunning = Boolean.FALSE;
 
     @Autowired
-    public SitemapService(UrlRepository urlRepository, SitemapNewsClient sitemapNewsClient){
+    public ArticleService(SitemapRepository sitemapRepository, UrlRepository urlRepository, SitemapNewsClient sitemapNewsClient){
+        this.sitemapRepository = sitemapRepository;
         this.urlRepository = urlRepository;
         this.sitemapNewsClient = sitemapNewsClient;
     }
-    public Url getSitemap(String loc) {
-        Optional<Url> byId = urlRepository.findById(loc);
+    public Sitemap getArticle(String loc) {
+        Optional<Sitemap> byId = sitemapRepository.findById(loc);
         if (byId.isPresent()){
             return byId.get();
         }
 
-        else throw new SitemapNotFoundException("Sitemap with url: " + loc + " was not found.");
+        else throw new ArticleNotFoundException("Article with url: " + loc + " was not found.");
     }
 
-    public void addSitemap(Url sitemap) {
-        urlRepository.save(sitemap);
+    public void addArticle(Sitemap sitemap) {
+        sitemapRepository.save(sitemap);
     }
 
-    public void updateSitemap(Url sitemap) {
-        if(urlRepository.existsById(sitemap.getLoc())){
-            urlRepository.save(sitemap);
+    public void updateArticle(Sitemap sitemap) {
+        if(sitemapRepository.existsById(sitemap.getLoc())){
+            sitemapRepository.save(sitemap);
         }
-        else throw new SitemapNotFoundException("Sitemap with url: " + sitemap.getLoc() + " was not found.");
+        else throw new ArticleNotFoundException("Article with url: " + sitemap.getLoc() + " was not found.");
     }
 
-    public void deleteSitemap(String loc) {
-        Optional<Url> byId = urlRepository.findById(loc);
+    public void deleteArticle(String loc) {
+        Optional<Sitemap> byId = sitemapRepository.findById(loc);
         if (byId.isPresent()) {
-            urlRepository.deleteById(loc);
+            sitemapRepository.deleteById(loc);
         }
-        else throw new SitemapNotFoundException("Sitemap with url: " + loc + " was not found.");
+        else throw new ArticleNotFoundException("Article with url: " + loc + " was not found.");
     }
 
-    public List<Url> getSitemapNews() {
+    public List<Sitemap> getSitemapNews() {
         String stringResponse = sitemapNewsClient.getStringResponse();
         XMLInputFactory input = new WstxInputFactory();
         input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
         XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
         try {
-            List<Url> articles = xmlMapper.readValue(stringResponse, new TypeReference<List<Url>>() {});
-            articles = articles.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
-            return articles;
+            List<Sitemap> sitemaps = xmlMapper.readValue(stringResponse, new TypeReference<List<Sitemap>>() {});
+            sitemaps = sitemaps.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
+            return sitemaps;
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -95,9 +99,9 @@ public class SitemapService {
             input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
             XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
             try {
-                List<Url> sitemaps = xmlMapper.readValue(stringResponse, new TypeReference<List<Url>>() {});
+                List<Sitemap> sitemaps = xmlMapper.readValue(stringResponse, new TypeReference<List<Sitemap>>() {});
                 sitemaps = sitemaps.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
-                urlRepository.saveAll(sitemaps);
+                sitemapRepository.saveAll(sitemaps);
                 log.info("Sitemap news mapping has ended.");
                 isMappingRunning = Boolean.FALSE;
             } catch (Throwable e) {
