@@ -3,6 +3,7 @@ package com.ac.upt.sitemapnewsmanager.services;
 import com.ac.upt.sitemapnewsmanager.clients.SitemapNewsClient;
 import com.ac.upt.sitemapnewsmanager.exceptions.ArticleNotFoundException;
 import com.ac.upt.sitemapnewsmanager.models.Sitemap;
+import com.ac.upt.sitemapnewsmanager.models.Url;
 import com.ac.upt.sitemapnewsmanager.repositories.SitemapRepository;
 import com.ac.upt.sitemapnewsmanager.repositories.UrlRepository;
 import com.ctc.wstx.stax.WstxInputFactory;
@@ -17,6 +18,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.xml.stream.XMLInputFactory;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -47,8 +55,8 @@ public class ArticleService {
         this.urlRepository = urlRepository;
         this.sitemapNewsClient = sitemapNewsClient;
     }
-    public Sitemap getArticle(String loc) {
-        Optional<Sitemap> byId = sitemapRepository.findById(loc);
+    public Url getArticle(String loc) {
+        Optional<Url> byId = urlRepository.findById(loc);
         if (byId.isPresent()){
             return byId.get();
         }
@@ -56,21 +64,21 @@ public class ArticleService {
         else throw new ArticleNotFoundException("Article with url: " + loc + " was not found.");
     }
 
-    public void addArticle(Sitemap sitemap) {
-        sitemapRepository.save(sitemap);
+    public void addArticle(Url article) {
+        urlRepository.save(article);
     }
 
-    public void updateArticle(Sitemap sitemap) {
-        if(sitemapRepository.existsById(sitemap.getLoc())){
-            sitemapRepository.save(sitemap);
+    public void updateArticle(Url article) {
+        if(urlRepository.existsById(article.getLoc())){
+            urlRepository.save(article);
         }
-        else throw new ArticleNotFoundException("Article with url: " + sitemap.getLoc() + " was not found.");
+        else throw new ArticleNotFoundException("Article with url: " + article.getLoc() + " was not found.");
     }
 
     public void deleteArticle(String loc) {
-        Optional<Sitemap> byId = sitemapRepository.findById(loc);
+        Optional<Url> byId = urlRepository.findById(loc);
         if (byId.isPresent()) {
-            sitemapRepository.deleteById(loc);
+            urlRepository.deleteById(loc);
         }
         else throw new ArticleNotFoundException("Article with url: " + loc + " was not found.");
     }
@@ -111,5 +119,66 @@ public class ArticleService {
             }
         }
         else log.info("Sitemap news mapping already running.");
+    }
+
+    public List<Url> getUrlNews() {
+        XMLInputFactory input = new WstxInputFactory();
+        input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
+        XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
+        List<Sitemap> sitemaps = getSitemapNews();
+        List<Url> urlList = null;
+        for (Sitemap sitemap : sitemaps) {
+            String sitemapUrl = sitemap.getLoc();
+            String channelName = sitemapUrl.substring(sitemapUrl.indexOf("https://www.telegraph.co.uk/") + "https://www.telegraph.co.uk/".length(), sitemapUrl.lastIndexOf("/sitemap.xml"));
+            String urlStringResponse = getStringResponseFromUrl(sitemapUrl);
+            try {
+                urlList = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Url>>() {});
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            urlList = urlList.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
+            urlList.forEach(url -> url.setChannelName(channelName));
+            urlRepository.saveAll(urlList);
+            return urlList;
+            }
+        return urlList;
+    }
+
+    public void addUrlNews() {
+        XMLInputFactory input = new WstxInputFactory();
+        input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
+        XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
+        List<Sitemap> sitemaps = getSitemapNews();
+        List<Url> urlList = null;
+        for (Sitemap sitemap : sitemaps) {
+            String sitemapUrl = sitemap.getLoc();
+            String channelName = sitemapUrl.substring(sitemapUrl.indexOf("https://www.telegraph.co.uk/") + "https://www.telegraph.co.uk/".length(), sitemapUrl.lastIndexOf("/sitemap.xml"));
+            String urlStringResponse = getStringResponseFromUrl(sitemapUrl);
+            try {
+                urlList = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Url>>() {});
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            urlList = urlList.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
+            urlList.forEach(url -> url.setChannelName(channelName));
+            urlRepository.saveAll(urlList);
+            log.info("Saved articles.");
+            break;
+        }
+    }
+
+    public String getStringResponseFromUrl(String url) {
+        HttpURLConnection connection;
+        try {
+            connection = (HttpURLConnection) new URL(url).openConnection();
+            InputStream inputStream = connection.getInputStream();
+            return new BufferedReader(
+                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                    .lines()
+                    .collect(Collectors.joining("\n"));
+        } catch (IOException e) {
+            log.error("Tried to access endpoint with no success.");
+            throw new RuntimeException(e);
+        }
     }
 }

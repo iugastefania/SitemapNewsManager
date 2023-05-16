@@ -1,6 +1,7 @@
 package com.ac.upt.sitemapnewsmanager.controllers;
 
 import com.ac.upt.sitemapnewsmanager.models.Sitemap;
+import com.ac.upt.sitemapnewsmanager.models.Url;
 import com.ac.upt.sitemapnewsmanager.services.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,20 +17,20 @@ public class ArticleController {
     ArticleService articleService;
 
     @GetMapping("/getArticle")
-    public ResponseEntity<Sitemap> getArticle(@RequestParam String loc){
-        Sitemap sitemap = articleService.getArticle(loc);
-        return new ResponseEntity<>(sitemap, HttpStatus.OK);
+    public ResponseEntity<Url> getArticle(@RequestParam String loc){
+        Url url = articleService.getArticle(loc);
+        return new ResponseEntity<>(url, HttpStatus.OK);
     }
     @PostMapping("/addArticle")
-    public ResponseEntity<String> addArticle(@RequestBody Sitemap sitemap){
-        articleService.addArticle(sitemap);
-        return new ResponseEntity<>("Article with url: " + sitemap.toString() + " was added.", HttpStatus.OK);
+    public ResponseEntity<String> addArticle(@RequestBody Url article){
+        articleService.addArticle(article);
+        return new ResponseEntity<>("Article with url: " + article.toString() + " was added.", HttpStatus.OK);
     }
 
     @PutMapping("/updateArticle")
-    public ResponseEntity<String> updateArticle(@RequestBody Sitemap sitemap){
-        articleService.updateArticle(sitemap);
-        return new ResponseEntity<>("Article with url: " + sitemap.toString() + " was updated.", HttpStatus.OK);
+    public ResponseEntity<String> updateArticle(@RequestBody Url article){
+        articleService.updateArticle(article);
+        return new ResponseEntity<>("Article with url: " + article.toString() + " was updated.", HttpStatus.OK);
     }
 
     @DeleteMapping("/deleteArticle")
@@ -43,6 +44,15 @@ public class ArticleController {
         return articleService.getSitemapNews();
     }
 
+    @GetMapping("/getUrlNews")
+    public List<Url> getUrlNews(){
+         return articleService.getUrlNews();
+    }
+
+    @PostMapping("/addUrlNews")
+    public void addUrlNews(){
+        articleService.addUrlNews();
+    }
     @PostMapping("/triggerSitemapNewsMapping")
     public ResponseEntity<String> triggerSitemapNewsMapping(){
         Thread thread = new Thread(){
