@@ -1,6 +1,7 @@
 package com.ac.upt.sitemapnewsmanager.controllers;
 
 import com.ac.upt.sitemapnewsmanager.models.Sitemap;
+import com.ac.upt.sitemapnewsmanager.models.Url;
 import com.ac.upt.sitemapnewsmanager.services.ArticleService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,34 +34,38 @@ public class ArticleControllerTest {
     @Test
     public void testGetArticleEndpoint() throws Exception{
         String loc = "string";
-        Sitemap sitemap = new Sitemap("string");
-        when(articleService.getArticle(any())).thenReturn(sitemap);
-        mockMvc.perform(get("/getArticle").param("loc", loc)).andExpect(status().isOk()).andExpect(content().string(containsString("{\"loc\":\"string\"}")));
+        Url article = new Url("string", "string", "string");
+        when(articleService.getArticle(any())).thenReturn(article);
+        mockMvc.perform(get("/getArticle").param("loc", loc)).andExpect(status().isOk()).andExpect(content().string(containsString("{\"loc\":\"string\",\"lastmod\":\"string\",\"channelName\":\"string\"}")));
 
     }
 
     @Test
     public void testAddArticleEndpoint() throws Exception{
-        Sitemap sitemap = new Sitemap("string");
+        Url article = new Url("string", "string", "string");
         mockMvc.perform(post("/addArticle").contentType(MediaType.APPLICATION_JSON).content("{\n" +
-                "  \"loc\": \"string\"\n" +
+                "  \"loc\": \"string\",\n" +
+                "  \"lastmod\": \"string\",\n" +
+                "  \"channelName\": \"string\"\n" +
                 "}")).andExpect(status().isOk());
-        verify(articleService, times(1)).addArticle(sitemap);
+        verify(articleService, times(1)).addArticle(article);
     }
 
     @Test
     public void testUpdateArticleEndpoint() throws Exception{
-        Sitemap sitemap = new Sitemap("string");
+        Url article = new Url("string", "string", "string");
         mockMvc.perform(put("/updateArticle").contentType(MediaType.APPLICATION_JSON).content("{\n" +
-                "  \"loc\": \"string\"\n" +
+                "  \"loc\": \"string\",\n" +
+                "  \"lastmod\": \"string\",\n" +
+                "  \"channelName\": \"string\"\n" +
                 "}")).andExpect(status().isOk());
-        verify(articleService, times(1)).updateArticle(sitemap);
+        verify(articleService, times(1)).updateArticle(article);
     }
 
     @Test
     public void testDeleteArticleEndpoint() throws Exception{
-        Sitemap sitemap = new Sitemap("string");
-        String loc = sitemap.getLoc();
+        Url article = new Url("string", "string", "string");
+        String loc = article.getLoc();
         mockMvc.perform(delete("/deleteArticle").contentType(MediaType.APPLICATION_JSON).content(loc)).andExpect(status().isOk());
         verify(articleService, times(1)).deleteArticle(loc);
     }

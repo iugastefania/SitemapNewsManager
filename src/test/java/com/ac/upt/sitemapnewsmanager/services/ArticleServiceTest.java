@@ -3,6 +3,7 @@ package com.ac.upt.sitemapnewsmanager.services;
 import com.ac.upt.sitemapnewsmanager.clients.SitemapNewsClient;
 import com.ac.upt.sitemapnewsmanager.exceptions.ArticleNotFoundException;
 import com.ac.upt.sitemapnewsmanager.models.Sitemap;
+import com.ac.upt.sitemapnewsmanager.models.Url;
 import com.ac.upt.sitemapnewsmanager.repositories.SitemapRepository;
 import com.ac.upt.sitemapnewsmanager.repositories.UrlRepository;
 import org.junit.jupiter.api.Test;
@@ -27,16 +28,16 @@ public class ArticleServiceTest {
 
     @Test
     public void testGetArticleHappyPath(){
-        Optional<Sitemap> expectedSitemap = Optional.of(new Sitemap("string"));
-        when(sitemapRepository.findById(anyString())).thenReturn(expectedSitemap);
-        Sitemap resultSitemap = articleService.getArticle("string");
-        assertEquals(expectedSitemap.get(), resultSitemap);
+        Optional<Url> expectedArticle = Optional.of(new Url("string", "string", "string"));
+        when(urlRepository.findById(anyString())).thenReturn(expectedArticle);
+        Url resultArticle = articleService.getArticle("string");
+        assertEquals(expectedArticle.get(), resultArticle);
     }
 
     @Test
     public void testGetArticle_ArticleNotFound(){
-        Optional<Sitemap> expectedSitemap = Optional.empty();
-        when(sitemapRepository.findById(anyString())).thenReturn(expectedSitemap);
+        Optional<Url> expectedArticle = Optional.empty();
+        when(urlRepository.findById(anyString())).thenReturn(expectedArticle);
         Exception exception = assertThrows(ArticleNotFoundException.class, () ->{
             articleService.getArticle("string");
         });
@@ -49,24 +50,24 @@ public class ArticleServiceTest {
 
     @Test
     public void addArticleTest(){
-        Sitemap expectedSitemap = new Sitemap("string");
-        articleService.addArticle(expectedSitemap);
-        verify(sitemapRepository, times(1)).save(expectedSitemap);
+        Url expectedArticle = new Url("string", "string", "string");
+        articleService.addArticle(expectedArticle);
+        verify(urlRepository, times(1)).save(expectedArticle);
     }
 
     @Test
     public void testUpdateArticleHappyPath(){
-        Sitemap expectedSitemap = new Sitemap("string");
-        when(sitemapRepository.existsById(anyString())).thenReturn(Boolean.TRUE);
-        articleService.updateArticle(expectedSitemap);
-        verify(sitemapRepository, times(1)).save(expectedSitemap);
+        Url expectedArticle = new Url("string", "string", "string");
+        when(urlRepository.existsById(anyString())).thenReturn(Boolean.TRUE);
+        articleService.updateArticle(expectedArticle);
+        verify(urlRepository, times(1)).save(expectedArticle);
     }
 
     @Test
     public void testUpdateArticle_ArticleNotFound(){
-        when(sitemapRepository.existsById(anyString())).thenReturn(Boolean.FALSE);
+        when(urlRepository.existsById(anyString())).thenReturn(Boolean.FALSE);
         Exception exception = assertThrows(ArticleNotFoundException.class, () ->{
-            articleService.updateArticle(new Sitemap("string"));
+            articleService.updateArticle(new Url("string", "string", "string"));
         });
 
         String expectedMessage = "Article with url: string was not found.";
@@ -77,16 +78,16 @@ public class ArticleServiceTest {
 
     @Test
     public void testDeleteArticleHappyPath(){
-        Optional<Sitemap> expectedSitemap = Optional.of(new Sitemap("string"));
-        when(sitemapRepository.findById(anyString())).thenReturn(expectedSitemap);
+        Optional<Url> expectedArticle = Optional.of(new Url("string", "string", "string"));
+        when(urlRepository.findById(anyString())).thenReturn(expectedArticle);
         articleService.deleteArticle("string");
-        verify(sitemapRepository, times(1)).deleteById("string");
+        verify(urlRepository, times(1)).deleteById("string");
     }
 
     @Test
     public void testDeleteArticle_ArticleNotFound(){
-        Optional<Sitemap> expectedSitemap = Optional.empty();
-        when(sitemapRepository.findById(anyString())).thenReturn(expectedSitemap);
+        Optional<Url> expectedArticle= Optional.empty();
+        when(urlRepository.findById(anyString())).thenReturn(expectedArticle);
         Exception exception = assertThrows(ArticleNotFoundException.class, () ->{
             articleService.deleteArticle("string");
         });
