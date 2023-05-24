@@ -159,4 +159,6 @@ public class ArticleServiceTest {
         verify(sitemapNewsClient, times(0)).getStringResponse();
         verify(sitemapRepository, times(0)).saveAll(any());
     }
+
+    //add tests
 }

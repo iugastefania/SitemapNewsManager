@@ -77,5 +77,6 @@ public class ArticleControllerTest {
         mockMvc.perform(get("/getSitemapNews")).andExpect(content().string(containsString("[{\"loc\":\"string\"}]")));
     }
 
+    // add tests
 
 }
