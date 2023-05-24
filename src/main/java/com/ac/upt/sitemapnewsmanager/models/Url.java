@@ -22,4 +22,7 @@ public class Url {
     private String loc;
     private String lastmod;
     private String channelName;
+    @Column(columnDefinition="text")
+    private String description;
+    private String thumbnail;
 }

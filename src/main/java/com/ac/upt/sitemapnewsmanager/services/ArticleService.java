@@ -13,6 +13,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.dataformat.xml.XmlFactory;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -127,7 +129,31 @@ public class ArticleService {
                     List<Url> urlList = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Url>>() {});
                     urlList = urlList.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
                     urlList.forEach(url -> url.setChannelName(channelName));
-                    urlRepository.saveAll(urlList);
+                    // Iterate over each URL in urlList and extract description and thumbnail
+                    for (Url url : urlList) {
+                        String urlLoc = url.getLoc();
+                        try {
+                            Document document = Jsoup.connect(urlLoc).get();
+                            String description = document.select("meta[name=description]").attr("content");
+                            if (description.isEmpty()) {
+                                // Set value for description if it is empty
+                                String[] pathSegments = urlLoc.split("/");
+                                String desiredString = pathSegments[pathSegments.length - 1].replace("-", " ");
+//                                String transformedString = desiredString.replace("-", " ");
+                                description = desiredString.substring(0, 1).toUpperCase() + desiredString.substring(1);
+//                                description = transformedString;
+                            }
+                            String thumbnail = document.select("meta[property=og:image]").attr("content");
+                            // Set the extracted values in the Url object
+                            url.setDescription(description);
+                            url.setThumbnail(thumbnail);
+                            // Save the updated Url object
+                            urlRepository.save(url);
+//                            log.info("Saving ...");
+                        } catch (IOException e) {
+                            log.error("Failed to extract data from URL: " + urlLoc);
+                        }
+                    }
                     log.info("Article mapping for channel:" + channelName + " has ended.");
                 }
                 isMappingRunning = Boolean.FALSE;
