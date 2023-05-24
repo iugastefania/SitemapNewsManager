@@ -28,7 +28,7 @@ public class ArticleServiceTest {
 
     @Test
     public void testGetArticleHappyPath(){
-        Optional<Url> expectedArticle = Optional.of(new Url("string", "string", "string"));
+        Optional<Url> expectedArticle = Optional.of(new Url(null,"string", "string", "string", "string", "string"));
         when(urlRepository.findById(anyString())).thenReturn(expectedArticle);
         Url resultArticle = articleService.getArticle("string");
         assertEquals(expectedArticle.get(), resultArticle);
@@ -50,14 +50,14 @@ public class ArticleServiceTest {
 
     @Test
     public void addArticleTest(){
-        Url expectedArticle = new Url("string", "string", "string");
+        Url expectedArticle = new Url(null,"string", "string", "string", "string", "string");
         articleService.addArticle(expectedArticle);
         verify(urlRepository, times(1)).save(expectedArticle);
     }
 
     @Test
     public void testUpdateArticleHappyPath(){
-        Url expectedArticle = new Url("string", "string", "string");
+        Url expectedArticle = new Url(null,"string", "string", "string", "string", "string");
         when(urlRepository.existsById(anyString())).thenReturn(Boolean.TRUE);
         articleService.updateArticle(expectedArticle);
         verify(urlRepository, times(1)).save(expectedArticle);
@@ -67,7 +67,7 @@ public class ArticleServiceTest {
     public void testUpdateArticle_ArticleNotFound(){
         when(urlRepository.existsById(anyString())).thenReturn(Boolean.FALSE);
         Exception exception = assertThrows(ArticleNotFoundException.class, () ->{
-            articleService.updateArticle(new Url("string", "string", "string"));
+            articleService.updateArticle(new Url(null,"string", "string", "string", "string", "string"));
         });
 
         String expectedMessage = "Article with url: string was not found.";
@@ -78,7 +78,7 @@ public class ArticleServiceTest {
 
     @Test
     public void testDeleteArticleHappyPath(){
-        Optional<Url> expectedArticle = Optional.of(new Url("string", "string", "string"));
+        Optional<Url> expectedArticle = Optional.of(new Url(null,"string", "string", "string", "string", "string"));
         when(urlRepository.findById(anyString())).thenReturn(expectedArticle);
         articleService.deleteArticle("string");
         verify(urlRepository, times(1)).deleteById("string");
