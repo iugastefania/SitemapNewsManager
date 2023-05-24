@@ -152,7 +152,7 @@ public class ArticleService {
         List<Url> urlList = null;
         for (Sitemap sitemap : sitemaps) {
             String sitemapUrl = sitemap.getLoc();
-            String channelName = sitemapUrl.substring(sitemapUrl.indexOf("https://www.telegraph.co.uk/") + "https://www.telegraph.co.uk/".length(), sitemapUrl.lastIndexOf("/sitemap.xml"));
+            String channelName = sitemapUrl.substring(sitemapUrl.indexOf("https://www.telegraph.co.uk/") + "https://www.telegraph.co.uk/".length(), sitemapUrl.lastIndexOf("/sitemap"));
             String urlStringResponse = getStringResponseFromUrl(sitemapUrl);
             try {
                 urlList = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Url>>() {});
@@ -163,7 +163,6 @@ public class ArticleService {
             urlList.forEach(url -> url.setChannelName(channelName));
             urlRepository.saveAll(urlList);
             log.info("Saved articles.");
-            break;
         }
     }
 
