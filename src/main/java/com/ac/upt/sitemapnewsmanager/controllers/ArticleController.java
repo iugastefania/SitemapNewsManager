@@ -49,10 +49,6 @@ public class ArticleController {
          return articleService.getUrlNews();
     }
 
-//    @PostMapping("/addUrlNews")
-//    public void addUrlNews(){
-//        articleService.addUrlNews();
-//    }
     @PostMapping("/triggerSitemapNewsMapping")
     public ResponseEntity<String> triggerSitemapNewsMapping(){
         Thread thread = new Thread(){
