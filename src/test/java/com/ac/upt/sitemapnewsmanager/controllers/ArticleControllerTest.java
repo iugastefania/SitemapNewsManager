@@ -34,37 +34,42 @@ public class ArticleControllerTest {
     @Test
     public void testGetArticleEndpoint() throws Exception{
         String loc = "string";
-        Url article = new Url("string", "string", "string");
+        Url article = new Url(null,"string", "string", "string", "string", "string");
         when(articleService.getArticle(any())).thenReturn(article);
-        mockMvc.perform(get("/getArticle").param("loc", loc)).andExpect(status().isOk()).andExpect(content().string(containsString("{\"loc\":\"string\",\"lastmod\":\"string\",\"channelName\":\"string\"}")));
+        mockMvc.perform(get("/getArticle").param("loc", loc)).andExpect(status().isOk()).andExpect(content().string(containsString("{\"loc\":\"string\",\"lastmod\":\"string\",\"channelName\":\"string\",\"description\":\"string\",\"thumbnail\":\"string\"}")));
 
     }
 
     @Test
     public void testAddArticleEndpoint() throws Exception{
-        Url article = new Url("string", "string", "string");
+        Url article = new Url(null,"string", "string", "string", "string", "string");
         mockMvc.perform(post("/addArticle").contentType(MediaType.APPLICATION_JSON).content("{\n" +
+                
                 "  \"loc\": \"string\",\n" +
                 "  \"lastmod\": \"string\",\n" +
-                "  \"channelName\": \"string\"\n" +
+                "  \"channelName\": \"string\",\n" +
+                "  \"description\": \"string\",\n" +
+                "  \"thumbnail\": \"string\"\n" +
                 "}")).andExpect(status().isOk());
         verify(articleService, times(1)).addArticle(article);
     }
 
     @Test
     public void testUpdateArticleEndpoint() throws Exception{
-        Url article = new Url("string", "string", "string");
+        Url article = new Url(null,"string", "string", "string", "string", "string");
         mockMvc.perform(put("/updateArticle").contentType(MediaType.APPLICATION_JSON).content("{\n" +
                 "  \"loc\": \"string\",\n" +
                 "  \"lastmod\": \"string\",\n" +
-                "  \"channelName\": \"string\"\n" +
+                "  \"channelName\": \"string\",\n" +
+                "  \"description\": \"string\",\n" +
+                "  \"thumbnail\": \"string\"\n" +
                 "}")).andExpect(status().isOk());
         verify(articleService, times(1)).updateArticle(article);
     }
 
     @Test
     public void testDeleteArticleEndpoint() throws Exception{
-        Url article = new Url("string", "string", "string");
+        Url article = new Url(null,"string", "string", "string", "string", "string");
         String loc = article.getLoc();
         mockMvc.perform(delete("/deleteArticle").contentType(MediaType.APPLICATION_JSON).content(loc)).andExpect(status().isOk());
         verify(articleService, times(1)).deleteArticle(loc);
@@ -77,6 +82,11 @@ public class ArticleControllerTest {
         mockMvc.perform(get("/getSitemapNews")).andExpect(content().string(containsString("[{\"loc\":\"string\"}]")));
     }
 
-    // add tests
+    @Test
+    public void testGetUrlNewsEndpoint() throws Exception{
+        List<Url> urlList = Arrays.asList(new Url(null,"string", "string", "string", "string", "string"));
+        when(articleService.getUrlNews()).thenReturn(urlList);
+        mockMvc.perform(get("/getUrlNews")).andExpect(content().string(containsString("[{\"loc\":\"string\",\"lastmod\":\"string\",\"channelName\":\"string\",\"description\":\"string\",\"thumbnail\":\"string\"}]")));
+    }
 
 }
