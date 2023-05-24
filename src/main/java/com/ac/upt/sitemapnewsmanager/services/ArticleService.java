@@ -116,20 +116,20 @@ public class ArticleService {
                 sitemaps = sitemaps.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
                 sitemapRepository.saveAll(sitemaps);
                 log.info("Sitemap mapping has ended.");
-                log.info("Articles mapping has started.");
                 for (Sitemap sitemap : sitemaps) {
                     String sitemapUrl = sitemap.getLoc();
                     if (sitemapBlacklist.contains(sitemapUrl)) {
                         continue; // Skip processing and go to the next iteration
                     }
                     String channelName = sitemapUrl.substring(sitemapUrl.indexOf("https://www.telegraph.co.uk/") + "https://www.telegraph.co.uk/".length(), sitemapUrl.lastIndexOf("/sitemap"));
+                    log.info("Article mapping for channel:" + channelName + " has started.");
                     String urlStringResponse = getStringResponseFromUrl(sitemapUrl);
                     List<Url> urlList = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Url>>() {});
                     urlList = urlList.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
                     urlList.forEach(url -> url.setChannelName(channelName));
                     urlRepository.saveAll(urlList);
+                    log.info("Article mapping for channel:" + channelName + " has ended.");
                 }
-                log.info("Articles mapping has ended.");
                 isMappingRunning = Boolean.FALSE;
             } catch (Throwable e) {
                 log.error("Mapping has failed.");
@@ -165,31 +165,6 @@ public class ArticleService {
         }
         return processedUrls; // Return the accumulated list of processed items
     }
-
-//    public void addUrlNews() {
-//        XMLInputFactory input = new WstxInputFactory();
-//        input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
-//        XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
-//        List<Sitemap> sitemaps = getSitemapNews();
-//        List<Url> urlList = null;
-//        for (Sitemap sitemap : sitemaps) {
-//            String sitemapUrl = sitemap.getLoc();
-//            if (sitemapBlacklist.contains(sitemapUrl)) {
-//                continue; // Skip processing and go to the next iteration
-//            }
-//            String channelName = sitemapUrl.substring(sitemapUrl.indexOf("https://www.telegraph.co.uk/") + "https://www.telegraph.co.uk/".length(), sitemapUrl.lastIndexOf("/sitemap"));
-//            String urlStringResponse = getStringResponseFromUrl(sitemapUrl);
-//            try {
-//                urlList = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Url>>() {});
-//            } catch (JsonProcessingException e) {
-//                throw new RuntimeException(e);
-//            }
-//            urlList = urlList.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
-//            urlList.forEach(url -> url.setChannelName(channelName));
-//            urlRepository.saveAll(urlList);
-//            log.info("Saved articles.");
-//        }
-//    }
 
     public String getStringResponseFromUrl(String url) {
         HttpURLConnection connection;
