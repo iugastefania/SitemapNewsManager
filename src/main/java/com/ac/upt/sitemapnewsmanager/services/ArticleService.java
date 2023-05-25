@@ -53,8 +53,8 @@ public class ArticleService {
 
     private Boolean isMappingRunning = Boolean.FALSE;
 
-    @Value("${sitemap.blacklist}")
-    private List<String> sitemapBlacklist;
+    @Value("${sitemaps.disallowed}")
+    private List<String> sitemapsDisallowed;
 
     @Autowired
     public ArticleService(SitemapRepository sitemapRepository, UrlRepository urlRepository, SitemapNewsClient sitemapNewsClient){
@@ -120,7 +120,7 @@ public class ArticleService {
                 log.info("Sitemap mapping has ended.");
                 for (Sitemap sitemap : sitemaps) {
                     String sitemapUrl = sitemap.getLoc();
-                    if (sitemapBlacklist.contains(sitemapUrl)) {
+                    if (sitemapsDisallowed.contains(sitemapUrl)) {
                         continue; // Skip processing and go to the next iteration
                     }
                     String channelName = sitemapUrl.substring(sitemapUrl.indexOf("https://www.telegraph.co.uk/") + "https://www.telegraph.co.uk/".length(), sitemapUrl.lastIndexOf("/sitemap"));
@@ -175,7 +175,7 @@ public class ArticleService {
         List<Url> processedUrls = new ArrayList<>(); // Create a separate list to accumulate the processed items
         for (Sitemap sitemap : sitemaps) {
             String sitemapUrl = sitemap.getLoc();
-            if (sitemapBlacklist.contains(sitemapUrl)) {
+            if (sitemapsDisallowed.contains(sitemapUrl)) {
                 continue; // Skip processing and go to the next iteration
             }
             String channelName = sitemapUrl.substring(sitemapUrl.indexOf("https://www.telegraph.co.uk/") + "https://www.telegraph.co.uk/".length(), sitemapUrl.lastIndexOf("/sitemap"));
