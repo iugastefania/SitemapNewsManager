@@ -31,7 +31,7 @@ public class SitemapNewsClient {
                     .collect(Collectors.joining("\n"));
             return text;
         } catch (IOException e) {
-            log.error("Tried to access endpoint with no success.");
+            log.error("Tried to access sitemap endpoint with no success.");
             throw new RuntimeException(e);
         }
 

@@ -31,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -104,73 +105,6 @@ public class ArticleService {
         }
     }
 
-    @Scheduled(fixedDelay = 300000)
-    public void startSitemapNewsMapping() {
-        if (!isMappingRunning) {
-            isMappingRunning = Boolean.TRUE;
-            log.info("Sitemap mapping has started.");
-            String stringResponse = sitemapNewsClient.getStringResponse();
-            XMLInputFactory input = new WstxInputFactory();
-            input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
-            XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
-            try {
-                List<Sitemap> sitemaps = xmlMapper.readValue(stringResponse, new TypeReference<List<Sitemap>>() {});
-                sitemaps = sitemaps.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
-                sitemapRepository.saveAll(sitemaps);
-                log.info("Sitemap mapping has ended.");
-                for (Sitemap sitemap : sitemaps) {
-                    String sitemapUrl = sitemap.getLoc();
-                    if (sitemapsDisallowed.contains(sitemapUrl)) {
-                        continue; // Skip processing and go to the next iteration
-                    }
-                    String channelName = sitemapUrl.substring(sitemapUrl.indexOf("https://www.telegraph.co.uk/") + "https://www.telegraph.co.uk/".length(), sitemapUrl.lastIndexOf("/sitemap"));
-                    log.info("Article mapping for channel:" + channelName + " has started.");
-                    String urlStringResponse = getStringResponseFromUrl(sitemapUrl);
-                    List<Url> urlList = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Url>>() {});
-                    urlList = urlList.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
-                    urlList.forEach(url -> url.setChannelName(channelName));
-                    // Iterate over each URL in urlList and extract description and thumbnail
-                    for (Url url : urlList) {
-                        extracted(url);
-                    }
-                    log.info("Article mapping for channel:" + channelName + " has ended.");
-                }
-                isMappingRunning = Boolean.FALSE;
-            } catch (Throwable e) {
-                log.error("Mapping has failed.");
-                isMappingRunning = Boolean.FALSE;
-                throw new RuntimeException(e);
-            }
-        }
-        else log.info("Mapping already running.");
-    }
-
-    private void extracted(Url url) {
-        String urlLoc = url.getLoc();
-        Document document;
-        try {
-            document = Jsoup.connect(urlLoc).timeout(5000).get();
-        } catch (IOException e) {
-            log.error("Failed to extract data from URL: " + urlLoc);
-            return;
-        }
-        String description = document.select("meta[name=description]").attr("content");
-        if (description.isEmpty()) {
-            // Set value for description if it is empty
-            String[] pathSegments = urlLoc.split("/");
-            String desiredString = pathSegments[pathSegments.length - 1].replace("-", " ");
-            description = desiredString.substring(0, 1).toUpperCase() + desiredString.substring(1);
-//                                description = null;
-        }
-        String thumbnail = document.select("meta[property=og:image]").attr("content");
-        // Set the extracted values in the Url object
-        url.setDescription(description);
-        url.setThumbnail(thumbnail);
-        // Save the updated Url object
-        urlRepository.save(url);
-//                            log.info("Saving ...");
-    }
-
     public List<Url> getUrlNews() {
         XMLInputFactory input = new WstxInputFactory();
         input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
@@ -197,17 +131,89 @@ public class ArticleService {
         return processedUrls; // Return the accumulated list of processed items
     }
 
+    @Scheduled(fixedDelay = 300000)
+    public void startSitemapNewsMapping() {
+        if (!isMappingRunning) {
+            isMappingRunning = Boolean.TRUE;
+            log.info("Sitemap mapping has started.");
+            String stringResponse = sitemapNewsClient.getStringResponse();
+            XMLInputFactory input = new WstxInputFactory();
+            input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
+            XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
+            try {
+                List<Sitemap> sitemaps = xmlMapper.readValue(stringResponse, new TypeReference<List<Sitemap>>() {});
+                sitemaps = sitemaps.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
+                sitemapRepository.saveAll(sitemaps);
+                log.info("Sitemap mapping has ended.");
+                for (Sitemap sitemap : sitemaps) {
+                    String sitemapUrl = sitemap.getLoc();
+                    if (sitemapsDisallowed.contains(sitemapUrl)) {
+                        continue; // Skip processing and go to the next iteration
+                    }
+                    String channelName = sitemapUrl.substring(sitemapUrl.indexOf("https://www.telegraph.co.uk/") + "https://www.telegraph.co.uk/".length(), sitemapUrl.lastIndexOf("/sitemap"));
+                    log.info("Article mapping for channel:" + channelName + " has started.");
+                    String urlStringResponse = getStringResponseFromUrl(sitemapUrl);
+                    List<Url> urlList = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Url>>() {});
+                    urlList = urlList.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
+                    urlList.forEach(url -> url.setChannelName(channelName));
+
+                    // Create a list of CompletableFutures for concurrent processing
+                    List<CompletableFuture<Void>> futures = urlList.stream()
+                            .map(this::extractedAsync)
+                            .collect(Collectors.toList());
+
+                    // Wait for all the CompletableFuture tasks to complete
+                    CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+                    log.info("Article mapping for channel:" + channelName + " has ended.");
+                }
+                isMappingRunning = Boolean.FALSE;
+            } catch (Throwable e) {
+                log.error("Mapping has failed.");
+                isMappingRunning = Boolean.FALSE;
+                throw new RuntimeException(e);
+            }
+        } else {
+            log.info("Mapping already running.");
+        }
+    }
+
+    private CompletableFuture<Void> extractedAsync(Url url) {
+        return CompletableFuture.runAsync(() -> {
+            String urlLoc = url.getLoc();
+            Document document;
+            try {
+                document = Jsoup.connect(urlLoc).get();
+            } catch (IOException e) {
+                log.error("Failed to extract data from URL: " + urlLoc);
+                return;
+            }
+            String description = document.select("meta[name=description]").attr("content");
+            if (description.isEmpty()) {
+                // Set value for description if it is empty
+                String[] pathSegments = urlLoc.split("/");
+                String desiredString = pathSegments[pathSegments.length - 1].replace("-", " ");
+                description = desiredString.substring(0, 1).toUpperCase() + desiredString.substring(1);
+                //                                description = null;
+            }
+            String thumbnail = document.select("meta[property=og:image]").attr("content");
+            // Set the extracted values in the Url object
+            url.setDescription(description);
+            url.setThumbnail(thumbnail);
+            // Save the updated Url object
+            urlRepository.save(url);
+        });
+    }
+
     public String getStringResponseFromUrl(String url) {
-        HttpURLConnection connection;
         try {
-            connection = (HttpURLConnection) new URL(url).openConnection();
-            InputStream inputStream = connection.getInputStream();
-            return new BufferedReader(
-                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))
-                    .lines()
-                    .collect(Collectors.joining("\n"));
+            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            try (InputStream inputStream = connection.getInputStream();
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+                return reader.lines().collect(Collectors.joining("\n"));
+            }
         } catch (IOException e) {
-            log.error("Tried to access endpoint with no success.");
+            log.error("Tried to access article endpoint with no success.");
             throw new RuntimeException(e);
         }
     }
