@@ -185,7 +185,8 @@ public class ArticleService {
                 // Introduce a delay of 1 second before making the request
                 Thread.sleep(1000);
 
-                Document document = Jsoup.connect(urlLoc).get();
+                Document document = Jsoup.parse(new URL(urlLoc), 10000);
+
                 String description = document.select("meta[name=description]").attr("content");
                 if (description.isEmpty()) {
                     // Set value for description if it is empty
@@ -211,12 +212,15 @@ public class ArticleService {
 
     public String getStringResponseFromUrl(String url) {
         try {
+            // Introduce a delay of 1 second before making the request
+            Thread.sleep(1000);
+
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             try (InputStream inputStream = connection.getInputStream();
                  BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
                 return reader.lines().collect(Collectors.joining("\n"));
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             log.error("Tried to access the article endpoint without success.");
             throw new RuntimeException(e);
         }
