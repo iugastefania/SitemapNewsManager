@@ -146,29 +146,26 @@ public class ArticleService {
                 sitemaps = sitemaps.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
                 sitemapRepository.saveAll(sitemaps);
                 log.info("Sitemap mapping has ended.");
+                List<CompletableFuture<Void>> futures = new ArrayList<>();
                 for (Sitemap sitemap : sitemaps) {
                     String sitemapUrl = sitemap.getLoc();
                     if (sitemapsDisallowed.contains(sitemapUrl)) {
                         continue; // Skip processing and go to the next iteration
                     }
                     String channelName = sitemapUrl.substring(sitemapUrl.indexOf("https://www.telegraph.co.uk/") + "https://www.telegraph.co.uk/".length(), sitemapUrl.lastIndexOf("/sitemap"));
-                    log.info("Article mapping for channel:" + channelName + " has started.");
+                    log.info("Article mapping for channel: " + channelName + " has started.");
                     String urlStringResponse = getStringResponseFromUrl(sitemapUrl);
                     List<Url> urlList = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Url>>() {});
                     urlList = urlList.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
                     urlList.forEach(url -> url.setChannelName(channelName));
 
-                    List<CompletableFuture<List<Url>>> futures = urlList.stream()
-                            .map(this::extractedAsync)
-                            .collect(Collectors.toList());
+                    for (Url url : urlList) {
+                        CompletableFuture<Void> future = extractedAsync(url)
+                                .thenAccept(updatedUrl -> urlRepository.save(updatedUrl));
+                        futures.add(future);
+                    }
 
-                    List<Url> updatedUrls = futures.stream()
-                            .flatMap(future -> future.join().stream())
-                            .collect(Collectors.toList());
-
-                    urlRepository.saveAll(updatedUrls);
-
-                    log.info("Article mapping for channel:" + channelName + " has ended.");
+                    log.info("Article mapping for channel: " + channelName + " has ended.");
                 }
                 isMappingRunning = Boolean.FALSE;
             } catch (Throwable e) {
@@ -181,16 +178,11 @@ public class ArticleService {
         }
     }
 
-    private CompletableFuture<List<Url>> extractedAsync(Url url) {
+    private CompletableFuture<Url> extractedAsync(Url url) {
+        String urlLoc = url.getLoc();
         return CompletableFuture.supplyAsync(() -> {
-            String urlLoc = url.getLoc();
             try {
-                // Introduce a delay of 1 second before making the request
-                Thread.sleep(1000);
-
-                // Retrieve the web page source using Jsoup's parse method
-                Document document = Jsoup.parse(new URL(urlLoc), 10000);
-
+                Document document = Jsoup.connect(urlLoc).get();
                 String description = document.select("meta[name=description]").attr("content");
                 if (description.isEmpty()) {
                     // Set value for description if it is empty
@@ -198,7 +190,6 @@ public class ArticleService {
                     String desiredString = pathSegments[pathSegments.length - 1].replace("-", " ");
                     description = desiredString.substring(0, 1).toUpperCase() + desiredString.substring(1);
                 }
-
                 String thumbnail = document.select("meta[property=og:image]").attr("content");
 
                 // Set the extracted values in the Url object
@@ -206,30 +197,27 @@ public class ArticleService {
                 url.setThumbnail(thumbnail);
 
                 // Return the updated Url object
-                return Collections.singletonList(url);
-            } catch (IOException | InterruptedException e) {
+                return url;
+            } catch (IOException e) {
                 log.error("Failed to extract data from URL: " + urlLoc);
-                return Collections.emptyList();
+                throw new RuntimeException(e);
             }
         });
     }
 
-
     public String getStringResponseFromUrl(String url) {
         try {
-            // Introduce a delay of 1 second before making the request
-            Thread.sleep(1000);
-
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             try (InputStream inputStream = connection.getInputStream();
                  BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
                 return reader.lines().collect(Collectors.joining("\n"));
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             log.error("Tried to access the article endpoint without success.");
             throw new RuntimeException(e);
         }
     }
+
 
 //    private void extractDataFromUrl(Url url) {
 //        String urlLoc = url.getLoc();
