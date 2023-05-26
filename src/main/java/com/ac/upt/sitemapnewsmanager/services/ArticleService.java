@@ -29,6 +29,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -157,13 +158,15 @@ public class ArticleService {
                     urlList = urlList.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
                     urlList.forEach(url -> url.setChannelName(channelName));
 
-                    // Create a list of CompletableFutures for concurrent processing
-                    List<CompletableFuture<Void>> futures = urlList.stream()
+                    List<CompletableFuture<List<Url>>> futures = urlList.stream()
                             .map(this::extractedAsync)
                             .collect(Collectors.toList());
 
-                    // Wait for all the CompletableFuture tasks to complete
-                    CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+                    List<Url> updatedUrls = futures.stream()
+                            .flatMap(future -> future.join().stream())
+                            .collect(Collectors.toList());
+
+                    urlRepository.saveAll(updatedUrls);
 
                     log.info("Article mapping for channel:" + channelName + " has ended.");
                 }
@@ -178,42 +181,52 @@ public class ArticleService {
         }
     }
 
-    private CompletableFuture<Void> extractedAsync(Url url) {
-        return CompletableFuture.runAsync(() -> {
+    private CompletableFuture<List<Url>> extractedAsync(Url url) {
+        return CompletableFuture.supplyAsync(() -> {
             String urlLoc = url.getLoc();
-            Document document;
             try {
-                document = Jsoup.connect(urlLoc).get();
-            } catch (IOException e) {
+                // Introduce a delay of 1 second before making the request
+                Thread.sleep(1000);
+
+                // Retrieve the web page source using Jsoup's parse method
+                Document document = Jsoup.parse(new URL(urlLoc), 10000);
+
+                String description = document.select("meta[name=description]").attr("content");
+                if (description.isEmpty()) {
+                    // Set value for description if it is empty
+                    String[] pathSegments = urlLoc.split("/");
+                    String desiredString = pathSegments[pathSegments.length - 1].replace("-", " ");
+                    description = desiredString.substring(0, 1).toUpperCase() + desiredString.substring(1);
+                }
+
+                String thumbnail = document.select("meta[property=og:image]").attr("content");
+
+                // Set the extracted values in the Url object
+                url.setDescription(description);
+                url.setThumbnail(thumbnail);
+
+                // Return the updated Url object
+                return Collections.singletonList(url);
+            } catch (IOException | InterruptedException e) {
                 log.error("Failed to extract data from URL: " + urlLoc);
-                return;
+                return Collections.emptyList();
             }
-            String description = document.select("meta[name=description]").attr("content");
-            if (description.isEmpty()) {
-                // Set value for description if it is empty
-                String[] pathSegments = urlLoc.split("/");
-                String desiredString = pathSegments[pathSegments.length - 1].replace("-", " ");
-                description = desiredString.substring(0, 1).toUpperCase() + desiredString.substring(1);
-                //                                description = null;
-            }
-            String thumbnail = document.select("meta[property=og:image]").attr("content");
-            // Set the extracted values in the Url object
-            url.setDescription(description);
-            url.setThumbnail(thumbnail);
-            // Save the updated Url object
-            urlRepository.save(url);
         });
     }
 
+
     public String getStringResponseFromUrl(String url) {
         try {
+            // Introduce a delay of 1 second before making the request
+            Thread.sleep(1000);
+
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             try (InputStream inputStream = connection.getInputStream();
                  BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
                 return reader.lines().collect(Collectors.joining("\n"));
             }
-        } catch (IOException e) {
-            log.error("Tried to access article endpoint with no success.");
+        } catch (IOException | InterruptedException e) {
+            log.error("Tried to access the article endpoint without success.");
             throw new RuntimeException(e);
         }
     }
