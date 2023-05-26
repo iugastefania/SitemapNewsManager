@@ -182,6 +182,9 @@ public class ArticleService {
         String urlLoc = url.getLoc();
         return CompletableFuture.supplyAsync(() -> {
             try {
+                // Introduce a delay of 1 second before making the request
+                Thread.sleep(1000);
+
                 Document document = Jsoup.connect(urlLoc).get();
                 String description = document.select("meta[name=description]").attr("content");
                 if (description.isEmpty()) {
@@ -198,12 +201,13 @@ public class ArticleService {
 
                 // Return the updated Url object
                 return url;
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 log.error("Failed to extract data from URL: " + urlLoc);
                 throw new RuntimeException(e);
             }
         });
     }
+
 
     public String getStringResponseFromUrl(String url) {
         try {
