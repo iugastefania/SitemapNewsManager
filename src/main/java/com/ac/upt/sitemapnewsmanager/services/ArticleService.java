@@ -26,7 +26,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -218,8 +220,14 @@ public class ArticleService {
                 // Introduce a delay of 1 second before making the request
                 Thread.sleep(1000);
 
+                // Set connection timeout and read timeout
+                int timeout = 10000; // Adjust the timeout value as needed
+                URLConnection connection = new URL(urlLoc).openConnection();
+                connection.setConnectTimeout(timeout);
+                connection.setReadTimeout(timeout);
+
                 // Retrieve the web page source using Jsoup's parse method
-                Document document = Jsoup.parse(new URL(urlLoc), 10000);
+                Document document = Jsoup.parse(connection.getURL(), timeout);
 
                 String description = document.select("meta[name=description]").attr("content");
                 if (description.isEmpty()) {
@@ -237,19 +245,24 @@ public class ArticleService {
 
                 // Return the updated Url object
                 return Collections.singletonList(url);
+            } catch (SocketTimeoutException e) {
+                log.error("Connection timed out for URL: " + urlLoc, e);
+                return Collections.emptyList();
             } catch (IOException | InterruptedException e) {
                 log.error("Failed to extract data from URL: " + urlLoc, e);
                 return Collections.emptyList();
             }
         }, executorService);
     }
-
     public String getStringResponseFromUrl(String url) {
         try {
             // Introduce a delay of 1 second before making the request
             Thread.sleep(1000);
 
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            connection.setConnectTimeout(10000); // Set the connect timeout to 10 seconds
+            connection.setReadTimeout(10000); // Set the read timeout to 10 seconds
+
             try (InputStream inputStream = connection.getInputStream();
                  BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
                 return reader.lines().collect(Collectors.joining("\n"));
@@ -259,6 +272,7 @@ public class ArticleService {
             throw new RuntimeException(e);
         }
     }
+
 
 
 
