@@ -116,11 +116,11 @@ public class ArticleService {
         input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
         XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
         List<Sitemap> sitemaps = getSitemapNews();
-        List<Url> processedUrls = new ArrayList<>(); // Create a separate list to accumulate the processed items
+        List<Url> processedUrls = new ArrayList<>(); // created a separate list to accumulate the processed items
         for (Sitemap sitemap : sitemaps) {
             String sitemapUrl = sitemap.getLoc();
             if (sitemapsDisallowed.contains(sitemapUrl)) {
-                continue; // Skip processing and go to the next iteration
+                continue; // skip processing and go to the next iteration
             }
             String channelName = sitemapUrl.substring(sitemapUrl.indexOf("https://www.telegraph.co.uk/") + "https://www.telegraph.co.uk/".length(), sitemapUrl.lastIndexOf("/sitemap"));
             String urlStringResponse = getStringResponseFromUrl(sitemapUrl);
@@ -132,9 +132,9 @@ public class ArticleService {
             }
             urlList = urlList.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
             urlList.forEach(url -> url.setChannelName(channelName));
-            processedUrls.addAll(urlList); // Add the processed items to the accumulated list
+            processedUrls.addAll(urlList); // add the processed items to the accumulated list
         }
-        return processedUrls; // Return the accumulated list of processed items
+        return processedUrls; // return the accumulated list of processed items
     }
 
     @Scheduled(fixedDelay = 300000)
@@ -157,14 +157,14 @@ public class ArticleService {
                 sitemaps = sitemaps.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
                 sitemapRepository.saveAll(sitemaps);
                 log.info("Sitemap mapping has ended.");
-                ExecutorService executorService = Executors.newFixedThreadPool(10); // Adjust the thread pool size as needed
+                ExecutorService executorService = Executors.newFixedThreadPool(10);
 
                 List<CompletableFuture<Void>> futures = sitemaps.stream()
                         .filter(sitemap -> !sitemapsDisallowed.contains(sitemap.getLoc()))
                         .map(sitemap -> processSitemapAsync(sitemap, xmlMapper, executorService))
                         .collect(Collectors.toList());
 
-                // Wait for all futures to complete
+                // wait for all futures to complete
                 CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
                 executorService.shutdown();
@@ -217,21 +217,21 @@ public class ArticleService {
         return CompletableFuture.supplyAsync(() -> {
             String urlLoc = url.getLoc();
             try {
-                // Introduce a delay of 1 second before making the request
+                // introduced a delay of 1 second before making the request
                 Thread.sleep(1000);
 
-                // Set connection timeout and read timeout
+                // set connection timeout and read timeout
                 int timeout = 10000; // Adjust the timeout value as needed
                 URLConnection connection = new URL(urlLoc).openConnection();
                 connection.setConnectTimeout(timeout);
                 connection.setReadTimeout(timeout);
 
-                // Retrieve the web page source using Jsoup's parse method
+                // retrieve the web page source using Jsoup parse method
                 Document document = Jsoup.parse(connection.getURL(), timeout);
 
                 String description = document.select("meta[name=description]").attr("content");
                 if (description.isEmpty()) {
-                    // Set value for description if it is empty
+                    // set value for description if it is empty
                     String[] pathSegments = urlLoc.split("/");
                     String desiredString = pathSegments[pathSegments.length - 1].replace("-", " ");
                     description = desiredString.substring(0, 1).toUpperCase() + desiredString.substring(1);
@@ -239,11 +239,11 @@ public class ArticleService {
 
                 String thumbnail = document.select("meta[property=og:image]").attr("content");
 
-                // Set the extracted values in the Url object
+                // set the extracted values in the Url object
                 url.setDescription(description);
                 url.setThumbnail(thumbnail);
 
-                // Return the updated Url object
+                // return the updated Url object
                 return Collections.singletonList(url);
             } catch (SocketTimeoutException e) {
                 log.error("Connection timed out for URL: " + urlLoc, e);
@@ -256,12 +256,12 @@ public class ArticleService {
     }
     public String getStringResponseFromUrl(String url) {
         try {
-            // Introduce a delay of 1 second before making the request
+            // introduce a delay of 1 second before making the request
             Thread.sleep(1000);
 
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-            connection.setConnectTimeout(10000); // Set the connect timeout to 10 seconds
-            connection.setReadTimeout(10000); // Set the read timeout to 10 seconds
+            connection.setConnectTimeout(10000); // set the connect timeout to 10 seconds
+            connection.setReadTimeout(10000); // set the read timeout to 10 seconds
 
             try (InputStream inputStream = connection.getInputStream();
                  BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
@@ -272,36 +272,4 @@ public class ArticleService {
             throw new RuntimeException(e);
         }
     }
-
-
-
-
-//    private void extractDataFromUrl(Url url) {
-//        String urlLoc = url.getLoc();
-//        Document document;
-//        try {
-//            document = Jsoup.connect(urlLoc).timeout(5000).get();
-//        } catch (IOException e) {
-//            log.error("Failed to extract data from URL: " + urlLoc);
-//            return;
-//        }
-//
-//        String description = document.select("meta[name=description]").attr("content");
-//        if (description.isEmpty()) {
-//            // Set value for description if it is empty
-//            String[] pathSegments = urlLoc.split("/");
-//            String desiredString = pathSegments[pathSegments.length - 1].replace("-", " ");
-//            description = desiredString.substring(0, 1).toUpperCase() + desiredString.substring(1);
-//            // description = null;
-//        }
-//
-//        String thumbnail = document.select("meta[property=og:image]").attr("content");
-//
-//        // Set the extracted values in the Url object
-//        url.setDescription(description);
-//        url.setThumbnail(thumbnail);
-//
-//        // Save the updated Url object
-//        urlRepository.save(url);
-//    }
 }
