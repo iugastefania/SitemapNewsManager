@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -35,7 +36,7 @@ public class ArticleController {
     }
 
     @DeleteMapping("/deleteArticle")
-    public ResponseEntity<String> deleteArticle(@RequestParam String loc){
+    public ResponseEntity<String> deleteArticle(@RequestBody String loc){
         articleService.deleteArticle(loc);
         return new ResponseEntity<>("Article with URL: " + loc + " was deleted.", HttpStatus.OK);
     }
@@ -70,7 +71,7 @@ public class ArticleController {
     }
 
     @GetMapping("/getUrlNews")
-    public List<Url> getUrlNews(){
+    public List<Url> getUrlNews() throws IOException {
         return articleService.getUrlNews();
     }
 

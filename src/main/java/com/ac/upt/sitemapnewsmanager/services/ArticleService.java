@@ -20,14 +20,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import javax.xml.stream.XMLInputFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,8 +36,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 @Service
+@Transactional
 @Slf4j
 public class ArticleService {
 
@@ -62,18 +61,19 @@ public class ArticleService {
     private List<String> sitemapsDisallowed;
 
     @Autowired
-    public ArticleService(SitemapRepository sitemapRepository, UrlRepository urlRepository, SitemapNewsClient sitemapNewsClient){
+    public ArticleService(SitemapRepository sitemapRepository, UrlRepository urlRepository, SitemapNewsClient sitemapNewsClient) {
         this.sitemapRepository = sitemapRepository;
         this.urlRepository = urlRepository;
         this.sitemapNewsClient = sitemapNewsClient;
     }
-    public Url getArticle(String loc) {
-        Optional<Url> byId = urlRepository.findById(loc);
-        if (byId.isPresent()){
-            return byId.get();
-        }
 
-        else throw new ArticleNotFoundException("Article with url: " + loc + " was not found.");
+    public Url getArticle(String loc) {
+        Optional<Url> byLoc = urlRepository.findByLoc(loc);
+        if (byLoc.isPresent()) {
+            return byLoc.get();
+        } else {
+            throw new ArticleNotFoundException("Article with loc: " + loc + " was not found.");
+        }
     }
 
     public void addArticle(Url article) {
@@ -81,18 +81,27 @@ public class ArticleService {
     }
 
     public void updateArticle(Url article) {
-        if(urlRepository.existsById(article.getLoc())){
-            urlRepository.save(article);
+        Optional<Url> byLoc = urlRepository.findByLoc(article.getLoc());
+        if (byLoc.isPresent()) {
+            Url existingArticle = byLoc.get();
+            existingArticle.setChannelName(article.getChannelName());
+            existingArticle.setDescription(article.getDescription());
+            existingArticle.setThumbnail(article.getThumbnail());
+
+            urlRepository.save(existingArticle);
+        } else {
+            throw new ArticleNotFoundException("Article with loc: " + article.getLoc() + " was not found.");
         }
-        else throw new ArticleNotFoundException("Article with url: " + article.getLoc() + " was not found.");
     }
 
+
     public void deleteArticle(String loc) {
-        Optional<Url> byId = urlRepository.findById(loc);
-        if (byId.isPresent()) {
-            urlRepository.deleteById(loc);
+        Optional<Url> byLoc = urlRepository.findByLoc(loc);
+        if (byLoc.isPresent()) {
+            urlRepository.deleteById(byLoc.get().getId());
+        } else {
+            throw new ArticleNotFoundException("Article with loc: " + loc + " was not found.");
         }
-        else throw new ArticleNotFoundException("Article with url: " + loc + " was not found.");
     }
 
     public List<Url> getAllArticlesByChannel(String channelName) {
@@ -108,11 +117,9 @@ public class ArticleService {
         Optional<Url> existingArticle = urlRepository.findByChannelNameAndLoc(channelName, article.getLoc());
         if (existingArticle.isPresent()) {
             Url updatedArticle = existingArticle.get();
-            // Update the necessary fields of the existing article with the new values from the input article
             updatedArticle.setThumbnail(article.getThumbnail());
             updatedArticle.setDescription(article.getDescription());
             updatedArticle.setLastmod(article.getLastmod());
-            // Update other fields as needed
             urlRepository.save(updatedArticle);
         } else {
             throw new ArticleNotFoundException("Article with URL: " + article.getLoc() + " and channel name: " + channelName + " was not found.");
@@ -143,7 +150,7 @@ public class ArticleService {
         }
     }
 
-    public List<Url> getUrlNews() {
+    public List<Url> getUrlNews() throws IOException {
         XMLInputFactory input = new WstxInputFactory();
         input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
         XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
@@ -155,7 +162,7 @@ public class ArticleService {
                 continue; // skip processing and go to the next iteration
             }
             String channelName = sitemapUrl.substring(sitemapUrl.indexOf("https://www.telegraph.co.uk/") + "https://www.telegraph.co.uk/".length(), sitemapUrl.lastIndexOf("/sitemap"));
-            String urlStringResponse = getStringResponseFromUrl(sitemapUrl);
+            String urlStringResponse = getStringResponseFromUrl(sitemapUrl, 5);
             List<Url> urlList;
             try {
                 urlList = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Url>>() {});
@@ -218,7 +225,12 @@ public class ArticleService {
             String sitemapUrl = sitemap.getLoc();
             String channelName = sitemapUrl.substring(sitemapUrl.indexOf("https://www.telegraph.co.uk/") + "https://www.telegraph.co.uk/".length(), sitemapUrl.lastIndexOf("/sitemap"));
             log.info("Article mapping for channel: " + channelName + " has started.");
-            String urlStringResponse = getStringResponseFromUrl(sitemapUrl);
+            String urlStringResponse = null;
+            try {
+                urlStringResponse = getStringResponseFromUrl(sitemapUrl,5);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             List<Url> urlList;
             try {
                 urlList = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Url>>() {});
@@ -277,19 +289,35 @@ public class ArticleService {
             }
         }, executorService);
     }
-    public String getStringResponseFromUrl(String url) {
-        try {
-            // introduce a delay of 1 second before making the request
-            Thread.sleep(1000);
 
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-            try (InputStream inputStream = connection.getInputStream();
-                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-                return reader.lines().collect(Collectors.joining("\n"));
-            }
-        } catch (IOException | InterruptedException e) {
-            log.error("Tried to access the article endpoint without success.");
-            throw new RuntimeException(e);
+    public String getStringResponseFromUrl(String url, int maxRedirects) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        connection.setInstanceFollowRedirects(true);
+        connection.setConnectTimeout(5000);
+        connection.setReadTimeout(5000);
+        connection.setRequestProperty("User-Agent", "Mozilla/5.0");
+
+        int redirectCount = 0;
+        while (connection.getResponseCode() / 100 == 3 && redirectCount < maxRedirects) {
+            String newUrl = connection.getHeaderField("Location");
+            connection = (HttpURLConnection) new URL(newUrl).openConnection();
+            connection.setInstanceFollowRedirects(true);
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(5000);
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0");
+            redirectCount++;
         }
+
+        StringBuilder response = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+        }
+
+        return response.toString();
     }
+
+
 }
