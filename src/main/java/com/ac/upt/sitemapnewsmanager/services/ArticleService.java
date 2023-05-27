@@ -26,9 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,6 +94,40 @@ public class ArticleService {
         }
         else throw new ArticleNotFoundException("Article with url: " + loc + " was not found.");
     }
+
+    public List<Url> getAllArticlesByChannel(String channelName) {
+        return urlRepository.findAllByChannelName(channelName);
+    }
+
+    public void addArticleToChannel(String channelName, Url article) {
+        article.setChannelName(channelName);
+        urlRepository.save(article);
+    }
+
+    public void updateArticleInChannel(String channelName, Url article) {
+        Optional<Url> existingArticle = urlRepository.findByChannelNameAndLoc(channelName, article.getLoc());
+        if (existingArticle.isPresent()) {
+            Url updatedArticle = existingArticle.get();
+            // Update the necessary fields of the existing article with the new values from the input article
+            updatedArticle.setThumbnail(article.getThumbnail());
+            updatedArticle.setDescription(article.getDescription());
+            updatedArticle.setLastmod(article.getLastmod());
+            // Update other fields as needed
+            urlRepository.save(updatedArticle);
+        } else {
+            throw new ArticleNotFoundException("Article with URL: " + article.getLoc() + " and channel name: " + channelName + " was not found.");
+        }
+    }
+
+    public void deleteArticleFromChannel(String channelName, String loc) {
+        Optional<Url> existingArticle = urlRepository.findByChannelNameAndLoc(channelName, loc);
+        if (existingArticle.isPresent()) {
+            urlRepository.delete(existingArticle.get());
+        } else {
+            throw new ArticleNotFoundException("Article with URL: " + loc + " and channel name: " + channelName + " was not found.");
+        }
+    }
+
 
     public List<Sitemap> getSitemapNews() {
         String stringResponse = sitemapNewsClient.getStringResponse();
@@ -220,14 +252,8 @@ public class ArticleService {
                 // introduced a delay of 1 second before making the request
                 Thread.sleep(1000);
 
-                // set connection timeout and read timeout
-                int timeout = 10000; // Adjust the timeout value as needed
-                URLConnection connection = new URL(urlLoc).openConnection();
-                connection.setConnectTimeout(timeout);
-                connection.setReadTimeout(timeout);
-
                 // retrieve the web page source using Jsoup parse method
-                Document document = Jsoup.parse(connection.getURL(), timeout);
+                Document document = Jsoup.parse(new URL(urlLoc), 10000);
 
                 String description = document.select("meta[name=description]").attr("content");
                 if (description.isEmpty()) {
@@ -245,9 +271,6 @@ public class ArticleService {
 
                 // return the updated Url object
                 return Collections.singletonList(url);
-            } catch (SocketTimeoutException e) {
-                log.error("Connection timed out for URL: " + urlLoc, e);
-                return Collections.emptyList();
             } catch (IOException | InterruptedException e) {
                 log.error("Failed to extract data from URL: " + urlLoc, e);
                 return Collections.emptyList();
@@ -260,9 +283,6 @@ public class ArticleService {
             Thread.sleep(1000);
 
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-            connection.setConnectTimeout(10000); // set the connect timeout to 10 seconds
-            connection.setReadTimeout(10000); // set the read timeout to 10 seconds
-
             try (InputStream inputStream = connection.getInputStream();
                  BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
                 return reader.lines().collect(Collectors.joining("\n"));
