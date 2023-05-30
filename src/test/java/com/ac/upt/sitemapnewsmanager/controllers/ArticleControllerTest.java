@@ -89,4 +89,72 @@ public class ArticleControllerTest {
         mockMvc.perform(get("/getUrlNews")).andExpect(content().string(containsString("[{\"loc\":\"string\",\"lastmod\":\"string\",\"channelName\":\"string\",\"description\":\"string\",\"thumbnail\":\"string\"}]")));
     }
 
+    @Test
+    public void testGetAllArticlesByChannelEndpoint() throws Exception {
+        String channelName = "channel";
+        List<Url> articles = Arrays.asList(
+                new Url(null, "url1", "2023-01-01", "channel", "Description 1", "Thumbnail 1"),
+                new Url(null, "url2", "2023-01-02", "channel", "Description 2", "Thumbnail 2")
+        );
+        when(articleService.getAllArticlesByChannel(channelName)).thenReturn(articles);
+        mockMvc.perform(get("/getAllArticlesByChannel").param("channelName", channelName))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("[{\"loc\":\"url1\",\"lastmod\":\"2023-01-01\",\"channelName\":\"channel\",\"description\":\"Description 1\",\"thumbnail\":\"Thumbnail 1\"},{\"loc\":\"url2\",\"lastmod\":\"2023-01-02\",\"channelName\":\"channel\",\"description\":\"Description 2\",\"thumbnail\":\"Thumbnail 2\"}]")));
+    }
+
+    @Test
+    public void testAddArticleToChannelEndpoint() throws Exception {
+        String channelName = "channel";
+        Url article = new Url(null, "url", "2023-01-01", channelName, "Description", "Thumbnail");
+        mockMvc.perform(post("/addArticleToChannel")
+                        .param("channelName", channelName)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\n" +
+                                "  \"loc\": \"url\",\n" +
+                                "  \"lastmod\": \"2023-01-01\",\n" +
+                                "  \"channelName\": \"" + channelName + "\",\n" +
+                                "  \"description\": \"Description\",\n" +
+                                "  \"thumbnail\": \"Thumbnail\"\n" +
+                                "}"))
+                .andExpect(status().isOk());
+        verify(articleService, times(1)).addArticleToChannel(channelName, article);
+    }
+
+    @Test
+    public void testUpdateArticleInChannelEndpoint() throws Exception {
+        String channelName = "channel";
+        Url article = new Url(null, "url", "2023-01-01", channelName, "Description", "Thumbnail");
+        mockMvc.perform(put("/updateArticleInChannel")
+                        .param("channelName", channelName)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\n" +
+                                "  \"loc\": \"url\",\n" +
+                                "  \"lastmod\": \"2023-01-01\",\n" +
+                                "  \"channelName\": \"" + channelName + "\",\n" +
+                                "  \"description\": \"Description\",\n" +
+                                "  \"thumbnail\": \"Thumbnail\"\n" +
+                                "}"))
+                .andExpect(status().isOk());
+        verify(articleService, times(1)).updateArticleInChannel(channelName, article);
+    }
+
+    @Test
+    public void testDeleteArticleFromChannelEndpoint() throws Exception {
+        String channelName = "channel";
+        String loc = "url";
+        mockMvc.perform(delete("/deleteArticleFromChannel")
+                        .param("channelName", channelName)
+                        .param("loc", loc))
+                .andExpect(status().isOk());
+        verify(articleService, times(1)).deleteArticleFromChannel(channelName, loc);
+    }
+
+    @Test
+    public void testTriggerSitemapNewsMappingEndpoint() throws Exception {
+        mockMvc.perform(post("/triggerSitemapNewsMapping"))
+                .andExpect(status().isOk());
+        verify(articleService, times(1)).startSitemapNewsMapping();
+    }
+
+
 }

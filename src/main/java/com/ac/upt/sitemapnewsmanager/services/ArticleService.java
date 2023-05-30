@@ -157,11 +157,11 @@ public class ArticleService {
         input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
         XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
         List<Sitemap> sitemaps = getSitemapNews();
-        List<Url> processedUrls = new ArrayList<>(); // created a separate list to accumulate the processed items
+        List<Url> processedUrls = new ArrayList<>();
         for (Sitemap sitemap : sitemaps) {
             String sitemapUrl = sitemap.getLoc();
             if (sitemapsDisallowed.contains(sitemapUrl)) {
-                continue; // skip processing and go to the next iteration
+                continue;
             }
             String channelName = sitemapUrl.substring(sitemapUrl.indexOf("https://www.telegraph.co.uk/") + "https://www.telegraph.co.uk/".length(), sitemapUrl.lastIndexOf("/sitemap"));
             String urlStringResponse = getStringResponseFromUrl(sitemapUrl);
@@ -173,9 +173,9 @@ public class ArticleService {
             }
             urlList = urlList.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
             urlList.forEach(url -> url.setChannelName(channelName));
-            processedUrls.addAll(urlList); // add the processed items to the accumulated list
+            processedUrls.addAll(urlList);
         }
-        return processedUrls; // return the accumulated list of processed items
+        return processedUrls;
     }
 
     @Scheduled(fixedDelay = 300000)

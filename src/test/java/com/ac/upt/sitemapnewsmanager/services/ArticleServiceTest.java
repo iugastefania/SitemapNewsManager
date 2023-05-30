@@ -28,8 +28,8 @@ public class ArticleServiceTest {
 
     @Test
     public void testGetArticleHappyPath(){
-        Optional<Url> expectedArticle = Optional.of(new Url(null,"string", "string", "string", "string", "string"));
-        when(urlRepository.findById(anyString())).thenReturn(expectedArticle);
+        Optional<Url> expectedArticle = Optional.of(new Url(null, "string", "string", "string", "string", "string"));
+        when(urlRepository.findByLoc(anyString())).thenReturn(expectedArticle);
         Url resultArticle = articleService.getArticle("string");
         assertEquals(expectedArticle.get(), resultArticle);
     }
@@ -37,67 +37,66 @@ public class ArticleServiceTest {
     @Test
     public void testGetArticle_ArticleNotFound(){
         Optional<Url> expectedArticle = Optional.empty();
-        when(urlRepository.findById(anyString())).thenReturn(expectedArticle);
+        when(urlRepository.findByLoc(anyString())).thenReturn(expectedArticle);
         Exception exception = assertThrows(ArticleNotFoundException.class, () ->{
             articleService.getArticle("string");
         });
 
-        String expectedMessage = "Article with url: string was not found.";
+        String expectedMessage = "Article with loc: string was not found.";
         String actualMessage = exception.getMessage();
 
-        assertEquals(actualMessage,expectedMessage);
+        assertEquals(expectedMessage, actualMessage);
     }
 
     @Test
     public void addArticleTest(){
-        Url expectedArticle = new Url(null,"string", "string", "string", "string", "string");
+        Url expectedArticle = new Url(null, "string", "string", "string", "string", "string");
         articleService.addArticle(expectedArticle);
         verify(urlRepository, times(1)).save(expectedArticle);
     }
 
     @Test
     public void testUpdateArticleHappyPath(){
-        Url expectedArticle = new Url(null,"string", "string", "string", "string", "string");
-        when(urlRepository.existsById(anyString())).thenReturn(Boolean.TRUE);
+        Url expectedArticle = new Url(null, "string", "string", "string", "string", "string");
+        when(urlRepository.findByLoc(anyString())).thenReturn(Optional.of(expectedArticle));
         articleService.updateArticle(expectedArticle);
         verify(urlRepository, times(1)).save(expectedArticle);
     }
 
     @Test
     public void testUpdateArticle_ArticleNotFound(){
-        when(urlRepository.existsById(anyString())).thenReturn(Boolean.FALSE);
+        when(urlRepository.findByLoc(anyString())).thenReturn(Optional.empty());
         Exception exception = assertThrows(ArticleNotFoundException.class, () ->{
-            articleService.updateArticle(new Url(null,"string", "string", "string", "string", "string"));
+            articleService.updateArticle(new Url(null, "string", "string", "string", "string", "string"));
         });
 
-        String expectedMessage = "Article with url: string was not found.";
+        String expectedMessage = "Article with loc: string was not found.";
         String actualMessage = exception.getMessage();
 
-        assertEquals(actualMessage,expectedMessage);
+        assertEquals(expectedMessage, actualMessage);
     }
 
     @Test
     public void testDeleteArticleHappyPath(){
-        Optional<Url> expectedArticle = Optional.of(new Url(null,"string", "string", "string", "string", "string"));
-        when(urlRepository.findById(anyString())).thenReturn(expectedArticle);
+        Optional<Url> expectedArticle = Optional.of(new Url(null, "string", "string", "string", "string", "string"));
+        when(urlRepository.findByLoc(anyString())).thenReturn(expectedArticle);
         articleService.deleteArticle("string");
-        verify(urlRepository, times(1)).deleteById("string");
+        verify(urlRepository, times(1)).deleteById(expectedArticle.get().getId());
     }
 
     @Test
     public void testDeleteArticle_ArticleNotFound(){
         Optional<Url> expectedArticle= Optional.empty();
-        when(urlRepository.findById(anyString())).thenReturn(expectedArticle);
+        when(urlRepository.findByLoc(anyString())).thenReturn(expectedArticle);
         Exception exception = assertThrows(ArticleNotFoundException.class, () ->{
             articleService.deleteArticle("string");
         });
 
-        String expectedMessage = "Article with url: string was not found.";
+        String expectedMessage = "Article with loc: string was not found.";
         String actualMessage = exception.getMessage();
 
-        assertEquals(actualMessage,expectedMessage);
+        assertEquals(expectedMessage, actualMessage);
     }
-
     @Test
     public void testGetSitemapNewsHappyPath(){
         String stringResponse = "<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
@@ -146,7 +145,7 @@ public class ArticleServiceTest {
             articleService.startSitemapNewsMapping();
         });
 
-        String expectedMessage = "Exception";
+        String expectedMessage = "Mapping has failed.";
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
