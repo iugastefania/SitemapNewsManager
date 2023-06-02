@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -79,14 +78,13 @@ public class ArticleService {
     }
 
     public void addArticle(Url article) {
-        // Check if the URL with the same loc already exists
         Optional<Url> existingArticle = urlRepository.findByLoc(article.getLoc());
         if (existingArticle.isPresent()) {
-            // Throw an exception or handle the error as per your requirement
             throw new IllegalArgumentException("Article with URL: " + article.getLoc() + " already exists.");
         }
         urlRepository.save(article);
     }
+
     public void updateArticle(Url article) {
         Optional<Url> byLoc = urlRepository.findByLoc(article.getLoc());
         if (byLoc.isPresent()) {
@@ -95,13 +93,13 @@ public class ArticleService {
             existingArticle.setDescription(article.getDescription());
             existingArticle.setThumbnail(article.getThumbnail());
             existingArticle.setLastmod(article.getLastmod());
+            existingArticle.setTitle(article.getTitle());
 
             urlRepository.save(existingArticle);
         } else {
             throw new ArticleNotFoundException("Article with loc: " + article.getLoc() + " was not found.");
         }
     }
-
 
     public void deleteArticle(String loc) {
         Optional<Url> byLoc = urlRepository.findByLoc(loc);
@@ -117,10 +115,8 @@ public class ArticleService {
     }
 
     public void addArticleToChannel(String channelName, Url article) {
-        // Check if the URL with the same loc already exists
         Optional<Url> existingArticle = urlRepository.findByLoc(article.getLoc());
         if (existingArticle.isPresent()) {
-            // Throw an exception or handle the error as per your requirement
             throw new IllegalArgumentException("Article with URL: " + article.getLoc() + " already exists.");
         }
         article.setChannelName(channelName);
@@ -134,6 +130,7 @@ public class ArticleService {
             updatedArticle.setThumbnail(article.getThumbnail());
             updatedArticle.setDescription(article.getDescription());
             updatedArticle.setLastmod(article.getLastmod());
+            updatedArticle.setTitle(article.getTitle());
             urlRepository.save(updatedArticle);
         } else {
             throw new ArticleNotFoundException("Article with URL: " + article.getLoc() + " and channel name: " + channelName + " was not found.");
@@ -298,16 +295,14 @@ public class ArticleService {
         return CompletableFuture.supplyAsync(() -> {
             String urlLoc = url.getLoc();
             try {
-                // introduced a delay of 1 second before making the request
+                //delay 1 second
                 Thread.sleep(1000);
 
-                // retrieve the web page source using Jsoup parse method
                 Document document = Jsoup.parse(new URL(urlLoc), 10000);
 
                 String title = document.select("title").text();
                 String description = document.select("meta[name=description]").attr("content");
                 if (description.isEmpty()) {
-                    // set value for description if it is empty
                     String[] pathSegments = urlLoc.split("/");
                     String desiredString = pathSegments[pathSegments.length - 1].replace("-", " ");
                     description = desiredString.substring(0, 1).toUpperCase() + desiredString.substring(1);
@@ -315,12 +310,10 @@ public class ArticleService {
 
                 String thumbnail = document.select("meta[property=og:image]").attr("content");
 
-                // set the extracted values in the Url object
                 url.setTitle(title);
                 url.setDescription(description);
                 url.setThumbnail(thumbnail);
 
-                // return the updated Url object
                 return Collections.singletonList(url);
             } catch (IOException | InterruptedException e) {
                 log.error("Failed to extract data from URL: " + urlLoc, e);
@@ -331,7 +324,7 @@ public class ArticleService {
 
     public String getStringResponseFromUrl(String url) {
         try {
-            // introduce a delay of 1 second before making the request
+            //delay 1 second
             Thread.sleep(1000);
 
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
@@ -349,7 +342,7 @@ public class ArticleService {
         List<Url> urls = urlRepository.findAll();
         return urls.stream()
                 .map(Url::getChannelName)
-                .distinct() // Filter out duplicates
+                .distinct()
                 .collect(Collectors.toList());
     }
 
