@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -78,9 +79,14 @@ public class ArticleService {
     }
 
     public void addArticle(Url article) {
+        // Check if the URL with the same loc already exists
+        Optional<Url> existingArticle = urlRepository.findByLoc(article.getLoc());
+        if (existingArticle.isPresent()) {
+            // Throw an exception or handle the error as per your requirement
+            throw new IllegalArgumentException("Article with URL: " + article.getLoc() + " already exists.");
+        }
         urlRepository.save(article);
     }
-
     public void updateArticle(Url article) {
         Optional<Url> byLoc = urlRepository.findByLoc(article.getLoc());
         if (byLoc.isPresent()) {
@@ -111,6 +117,12 @@ public class ArticleService {
     }
 
     public void addArticleToChannel(String channelName, Url article) {
+        // Check if the URL with the same loc already exists
+        Optional<Url> existingArticle = urlRepository.findByLoc(article.getLoc());
+        if (existingArticle.isPresent()) {
+            // Throw an exception or handle the error as per your requirement
+            throw new IllegalArgumentException("Article with URL: " + article.getLoc() + " already exists.");
+        }
         article.setChannelName(channelName);
         urlRepository.save(article);
     }
@@ -152,7 +164,7 @@ public class ArticleService {
         }
     }
 
-    public List<Url> getUrlNews() {
+    public List<Url> getUrlNews(){
         XMLInputFactory input = new WstxInputFactory();
         input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
         XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
@@ -173,9 +185,37 @@ public class ArticleService {
             }
             urlList = urlList.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
             urlList.forEach(url -> url.setChannelName(channelName));
+            urlList.forEach(url -> url.setDescription("description"));
+            urlList.forEach(url -> url.setTitle("title"));
+            urlList.forEach(url -> url.setThumbnail("https://www.telegraph.co.uk/content/dam/wrestling/2021/04/08/TELEMMGLPICT000154956334_trans_NvBQzQNjv4Bqolk963VRNCok71xFe0ekZg6zy7pZl_fyly167s83uJA.jpeg?impolicy=logo-overlay"));
+//            for (Url url : urlList){
+//                String urlLoc = url.getLoc();
+//                Thread.sleep(1000);
+//
+//                // retrieve the web page source using Jsoup parse method
+//                Document document = Jsoup.parse(new URL(urlLoc), 10000);
+//
+//                String description = document.select("meta[name=description]").attr("content");
+//                if (description.isEmpty()) {
+//                    // set value for description if it is empty
+//                    String[] pathSegments = urlLoc.split("/");
+//                    String desiredString = pathSegments[pathSegments.length - 1].replace("-", " ");
+//                    description = desiredString.substring(0, 1).toUpperCase() + desiredString.substring(1);
+//                }
+//
+//                String thumbnail = document.select("meta[property=og:image]").attr("content");
+//
+//                // set the extracted values in the Url object
+//                url.setDescription(description);
+//                url.setThumbnail(thumbnail);
+//            }
+//            return  urlList;
             processedUrls.addAll(urlList);
         }
         return processedUrls;
+    }
+    public List<Url> getAllUrls() {
+        return urlRepository.findAll();
     }
 
     @Scheduled(fixedDelay = 300000)
@@ -264,6 +304,7 @@ public class ArticleService {
                 // retrieve the web page source using Jsoup parse method
                 Document document = Jsoup.parse(new URL(urlLoc), 10000);
 
+                String title = document.select("title").text();
                 String description = document.select("meta[name=description]").attr("content");
                 if (description.isEmpty()) {
                     // set value for description if it is empty
@@ -275,6 +316,7 @@ public class ArticleService {
                 String thumbnail = document.select("meta[property=og:image]").attr("content");
 
                 // set the extracted values in the Url object
+                url.setTitle(title);
                 url.setDescription(description);
                 url.setThumbnail(thumbnail);
 
@@ -286,6 +328,7 @@ public class ArticleService {
             }
         }, executorService);
     }
+
     public String getStringResponseFromUrl(String url) {
         try {
             // introduce a delay of 1 second before making the request
@@ -301,4 +344,13 @@ public class ArticleService {
             throw new RuntimeException(e);
         }
     }
+
+    public List<String> getAllChannelNames() {
+        List<Url> urls = urlRepository.findAll();
+        return urls.stream()
+                .map(Url::getChannelName)
+                .distinct() // Filter out duplicates
+                .collect(Collectors.toList());
+    }
+
 }

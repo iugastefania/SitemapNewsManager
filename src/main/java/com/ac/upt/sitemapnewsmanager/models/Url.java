@@ -23,6 +23,8 @@ public class Url {
     private String lastmod;
     private String channelName;
     @Column(columnDefinition="text")
+    private String title;
+    @Column(columnDefinition="text")
     private String description;
     @Column(columnDefinition="text")
     private String thumbnail;

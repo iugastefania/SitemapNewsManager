@@ -5,12 +5,18 @@ import com.ac.upt.sitemapnewsmanager.models.Url;
 import com.ac.upt.sitemapnewsmanager.services.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 @RestController
+@CrossOrigin(origins = "http://localhost:4200")
 public class ArticleController {
 
     @Autowired
@@ -23,7 +29,7 @@ public class ArticleController {
     }
 
     @PostMapping("/addArticle")
-    public ResponseEntity<String> addArticle(@RequestBody Url article){
+    public ResponseEntity<String> addArticle(@RequestBody Url article) {
         articleService.addArticle(article);
         return new ResponseEntity<>("Article with URL: " + article.getLoc() + " was added.", HttpStatus.OK);
     }
@@ -39,15 +45,14 @@ public class ArticleController {
         articleService.deleteArticle(loc);
         return new ResponseEntity<>("Article with URL: " + loc + " was deleted.", HttpStatus.OK);
     }
-
-    @GetMapping("/getAllArticlesByChannel")
-    public ResponseEntity<List<Url>> getAllArticlesByChannel(@RequestParam String channelName){
+    @GetMapping(value = "/getAllArticlesByChannel/{channelName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Url>> getAllArticlesByChannel(@PathVariable String channelName) {
         List<Url> articles = articleService.getAllArticlesByChannel(channelName);
         return new ResponseEntity<>(articles, HttpStatus.OK);
     }
 
     @PostMapping("/addArticleToChannel")
-    public ResponseEntity<String> addArticleToChannel(@RequestParam String channelName, @RequestBody Url article){
+    public ResponseEntity<String> addArticleToChannel(@RequestParam String channelName, @RequestBody Url article) {
         articleService.addArticleToChannel(channelName, article);
         return new ResponseEntity<>("Article with URL: " + article.getLoc() + " was added to channel: " + channelName, HttpStatus.OK);
     }
@@ -63,6 +68,10 @@ public class ArticleController {
         articleService.deleteArticleFromChannel(channelName, loc);
         return new ResponseEntity<>("Article with URL: " + loc + " was deleted from channel: " + channelName, HttpStatus.OK);
     }
+    @GetMapping("/channelNames")
+    public List<String> getAllChannelNames() {
+        return articleService.getAllChannelNames();
+    }
 
     @GetMapping("/getSitemapNews")
     public List<Sitemap> getSitemapNews(){
@@ -72,6 +81,12 @@ public class ArticleController {
     @GetMapping("/getUrlNews")
     public List<Url> getUrlNews(){
         return articleService.getUrlNews();
+    }
+
+    @GetMapping("/getAllUrls")
+    public ResponseEntity<List<Url>> getAllUrls() {
+        List<Url> urls = articleService.getAllUrls();
+        return new ResponseEntity<>(urls, HttpStatus.OK);
     }
 
     @PostMapping("/triggerSitemapNewsMapping")
