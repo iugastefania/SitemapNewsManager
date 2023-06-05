@@ -214,6 +214,14 @@ public class ArticleService {
     public List<Url> getAllUrls() {
         return urlRepository.findAll();
     }
+    public Long countUrlsByChannel(String channelName) {
+        return urlRepository.countAllByChannelName(channelName);
+    }
+
+    public String getLatestLastmodByChannel(String channelName) {
+        return urlRepository.findLatestLastmodByChannelName(channelName);
+    }
+
 
     @Scheduled(fixedDelay = 300000)
     public void startSitemapNewsMapping() {
@@ -295,12 +303,12 @@ public class ArticleService {
         return CompletableFuture.supplyAsync(() -> {
             String urlLoc = url.getLoc();
             try {
-                //delay 1 second
+                // Delay 1 second
                 Thread.sleep(1000);
 
                 Document document = Jsoup.parse(new URL(urlLoc), 10000);
 
-                String title = document.select("title").text();
+                String title = document.select("meta[property=og:title]").attr("content");
                 String description = document.select("meta[name=description]").attr("content");
                 if (description.isEmpty()) {
                     String[] pathSegments = urlLoc.split("/");
@@ -324,7 +332,7 @@ public class ArticleService {
 
     public String getStringResponseFromUrl(String url) {
         try {
-            //delay 1 second
+            //Delay 1 second
             Thread.sleep(1000);
 
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();

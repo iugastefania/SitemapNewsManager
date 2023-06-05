@@ -9,7 +9,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,13 +33,16 @@ public class ArticleController {
     @PostMapping("/addArticle")
     public ResponseEntity<String> addArticle(@RequestBody Url article) {
         articleService.addArticle(article);
-        return new ResponseEntity<>("Article with URL: " + article.getLoc() + " was added.", HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
+//        return new ResponseEntity<>("Article with URL: " + article.getLoc() + " was added.", HttpStatus.OK);
     }
 
     @PutMapping("/updateArticle")
     public ResponseEntity<String> updateArticle(@RequestBody Url article){
         articleService.updateArticle(article);
-        return new ResponseEntity<>("Article with URL: " + article.getLoc() + " was updated.", HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
+
+//        return new ResponseEntity<>("Article with URL: " + article.getLoc() + " was updated.", HttpStatus.OK);
     }
 
     @DeleteMapping("/deleteArticle")
@@ -87,6 +92,25 @@ public class ArticleController {
     public ResponseEntity<List<Url>> getAllUrls() {
         List<Url> urls = articleService.getAllUrls();
         return new ResponseEntity<>(urls, HttpStatus.OK);
+    }
+    @GetMapping("/countUrlsByChannel")
+    public ResponseEntity<Long> countUrlsByChannel(@RequestParam String channelName) {
+        Long count = articleService.countUrlsByChannel(channelName);
+        return new ResponseEntity<>(count, HttpStatus.OK);
+    }
+
+//    @GetMapping("/latestArticleByChannel")
+//    public ResponseEntity<String> latestArticleByChannel(@RequestParam String channelName) {
+//        String latestLastmod = articleService.getLatestLastmodByChannel(channelName);
+//        return new ResponseEntity<>(latestLastmod, HttpStatus.OK);
+//    }
+
+    @GetMapping("/latestArticleByChannel")
+    public ResponseEntity<Map<String, String>> latestArticleByChannel(@RequestParam String channelName) {
+        String latestLastmod = articleService.getLatestLastmodByChannel(channelName);
+        Map<String, String> response = new HashMap<>();
+        response.put("lastUpdatedDate", latestLastmod);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/triggerSitemapNewsMapping")

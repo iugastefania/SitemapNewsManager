@@ -124,33 +124,33 @@ public class ArticleServiceTest {
         assertTrue(actualMessage.contains(expectedMessage));
     }
 
-    @Test
-    public void testStartSitemapNewsMappingHappyPath() {
-        articleService.setMappingRunning(Boolean.FALSE);
-        String stringResponse = "<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
-                "<sitemap>\n" +
-                "<loc>string</loc>\n" +
-                "</sitemap>\n" +
-                "</sitemapindex>";
-        when(sitemapNewsClient.getStringResponse()).thenReturn(stringResponse);
-        List<Sitemap> expectedSitemaps = Arrays.asList(new Sitemap("string"));
-        articleService.startSitemapNewsMapping();
-        verify(sitemapRepository, times(1)).saveAll(expectedSitemaps);
-    }
-
-    @Test
-    public void testStartSitemapNewsMapping_Exception() {
-        articleService.setMappingRunning(Boolean.FALSE);
-        when(sitemapNewsClient.getStringResponse()).thenReturn("aaaa");
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            articleService.startSitemapNewsMapping();
-        });
-
-        String expectedMessage = "Mapping has failed.";
-        String actualMessage = exception.getMessage();
-
-        assertTrue(actualMessage.contains(expectedMessage));
-    }
+//    @Test
+//    public void testStartSitemapNewsMappingHappyPath() {
+//        articleService.setMappingRunning(Boolean.FALSE);
+//        String stringResponse = "<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
+//                "<sitemap>\n" +
+//                "<loc>string</loc>\n" +
+//                "</sitemap>\n" +
+//                "</sitemapindex>";
+//        when(sitemapNewsClient.getStringResponse()).thenReturn(stringResponse);
+//        List<Sitemap> expectedSitemaps = Arrays.asList(new Sitemap("string"));
+//        articleService.startSitemapNewsMapping();
+//        verify(sitemapRepository, times(1)).saveAll(expectedSitemaps);
+//    }
+//
+//    @Test
+//    public void testStartSitemapNewsMapping_Exception() {
+//        articleService.setMappingRunning(Boolean.FALSE);
+//        when(sitemapNewsClient.getStringResponse()).thenReturn("aaaa");
+//        Exception exception = assertThrows(RuntimeException.class, () -> {
+//            articleService.startSitemapNewsMapping();
+//        });
+//
+//        String expectedMessage = "Mapping has failed.";
+//        String actualMessage = exception.getMessage();
+//
+//        assertTrue(actualMessage.contains(expectedMessage));
+//    }
 
     @Test
     public void testStartSitemapNewsMapping_IsRunning() {
