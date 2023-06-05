@@ -38,16 +38,18 @@ public class User {
     @Size(max = 120)
     private String password;
 
-    @Column(columnDefinition="text")
-    private String role;
+    @Column(columnDefinition = "text")
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     public User() {
     }
-    public User(String email, String username, String password, String role) {
+
+    public User(String email, String username, String password, Role role) {
         this.email = email;
         this.username = username;
         this.password = password;
-        this.role=role;
+        this.role = role;
     }
 
 //    public Long getId() {

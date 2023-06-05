@@ -1,6 +1,7 @@
 package com.ac.upt.sitemapnewsmanager.services;
 
 
+import com.ac.upt.sitemapnewsmanager.models.Role;
 import com.ac.upt.sitemapnewsmanager.models.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
@@ -31,7 +32,7 @@ public class UserDetail implements UserDetails {
     @JsonIgnore
     private String password;
 
-    private String role;
+    private Role role;
 
     public static UserDetail build(User user) {
         return new UserDetail(
@@ -41,7 +42,6 @@ public class UserDetail implements UserDetails {
                 user.getPassword(),
                 user.getRole());
     }
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

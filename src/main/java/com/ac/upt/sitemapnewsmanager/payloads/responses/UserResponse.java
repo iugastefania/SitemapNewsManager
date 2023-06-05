@@ -1,5 +1,6 @@
 package com.ac.upt.sitemapnewsmanager.payloads.responses;
 
+import com.ac.upt.sitemapnewsmanager.models.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,7 @@ public class UserResponse {
     private Long id;
     private String username;
     private String email;
-    private String role;
+    private Role role;
 
 //    public UserResponse(Long id, String username, String email, String role) {
 //        this.id = id;

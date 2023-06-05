@@ -30,10 +30,13 @@ import javax.validation.Valid;
 public class UserController {
     @Autowired
     UserRepository userRepository;
+
     @Autowired
     PasswordEncoder encoder;
+
     @Autowired
     AuthenticationManager authenticationManager;
+
     @Autowired
     JwtUtils jwtUtils;
 
@@ -50,7 +53,8 @@ public class UserController {
 
         User user = new User(registerRequest.getEmail(),
                 registerRequest.getUsername(),
-                encoder.encode(registerRequest.getPassword()), "USER");
+                encoder.encode(registerRequest.getPassword()),
+                registerRequest.getRole());
         userRepository.save(user);
         return ResponseEntity.ok(new MessageResponse("Registered successfully!"));
     }

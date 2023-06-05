@@ -1,5 +1,6 @@
 package com.ac.upt.sitemapnewsmanager.payloads.requests;
 
+import com.ac.upt.sitemapnewsmanager.models.Role;
 import lombok.Getter;
 import lombok.Setter;
 import javax.validation.constraints.Email;
@@ -22,8 +23,11 @@ public class RegisterRequest {
     @Size(min = 7, max = 40)
     private String password;
 
-    private String role;
-    public void changeRole(String newRole){ this.role=newRole;}
+    private Role role;
+
+    public void changeRole(Role newRole) {
+        this.role = newRole;
+    }
 
 
 //    public String getEmail() {

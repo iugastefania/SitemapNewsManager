@@ -1,5 +1,6 @@
 package com.ac.upt.sitemapnewsmanager.payloads.requests;
 
+import com.ac.upt.sitemapnewsmanager.models.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +20,7 @@ public class UserRequest {
     @Email
     private String email;
 
-    private String roles;
+    private Role roles;
 
     private Long id;
 
