@@ -3,7 +3,10 @@ package com.ac.upt.sitemapnewsmanager.services;
 
 import com.ac.upt.sitemapnewsmanager.models.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,65 +16,36 @@ import java.util.Collections;
 import java.util.Objects;
 
 @EqualsAndHashCode
+@Getter
+@Setter
+@AllArgsConstructor
 public class UserDetail implements UserDetails {
     private static final long serialVersionUID = 1L;
-    private String role;
+
     private Long id;
-    private String username;
+
     private String email;
 
-    public Long getPoints() {
-        return points;
-    }
+    private String username;
 
-    public void setPoints(Long points) {
-        this.points = points;
-    }
-
-    private Long points;
     @JsonIgnore
     private String password;
-    public UserDetail(Long id, String username, String email, String password,
-                           String authorities, Long points ) {
-        this.id = id;
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.role = authorities;
-        this.points=points;
-    }
+
+    private String role;
+
     public static UserDetail build(User user) {
         return new UserDetail(
                 user.getId(),
-                user.getUsername(),
                 user.getEmail(),
+                user.getUsername(),
                 user.getPassword(),
-                user.getRole(),
-                user.getPoints());
+                user.getRole());
     }
 
-    public String getRole() {
-        return role;
-    }
-    public Long getId() {
-        return id;
-    }
-    public String getEmail() {
-        return email;
-    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return null;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-    @Override
-    public String getUsername() {
-        return username;
     }
     @Override
     public boolean isAccountNonExpired() {
@@ -99,5 +73,35 @@ public class UserDetail implements UserDetails {
         return Objects.equals(id, user.id);
     }
 
+//    public String getRole() {
+//        return role;
+//    }
+//    public Long getId() {
+//        return id;
+//    }
+//    public String getEmail() {
+//        return email;
+//    }
+
+//    @Override
+//    public Collection<? extends GrantedAuthority> getAuthorities() {
+//        return Collections.singletonList(new SimpleGrantedAuthority(role));
+//    }
+//    @Override
+//    public String getPassword() {
+//        return password;
+//    }
+//    @Override
+//    public String getUsername() {
+//        return username;
+//    }
+//    public UserDetail(Long id, String email, String username, String password,
+//                           String role) {
+//        this.id = id;
+//        this.email = email;
+//        this.username = username;
+//        this.password = password;
+//        this.role = role;
+//    }
 
 }

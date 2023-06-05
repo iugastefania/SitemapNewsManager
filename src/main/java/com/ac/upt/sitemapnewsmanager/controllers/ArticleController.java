@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/api/app")
 @CrossOrigin(origins = "http://localhost:4200")
 public class ArticleController {
 
@@ -99,11 +100,6 @@ public class ArticleController {
         return new ResponseEntity<>(count, HttpStatus.OK);
     }
 
-//    @GetMapping("/latestArticleByChannel")
-//    public ResponseEntity<String> latestArticleByChannel(@RequestParam String channelName) {
-//        String latestLastmod = articleService.getLatestLastmodByChannel(channelName);
-//        return new ResponseEntity<>(latestLastmod, HttpStatus.OK);
-//    }
 
     @GetMapping("/latestArticleByChannel")
     public ResponseEntity<Map<String, String>> latestArticleByChannel(@RequestParam String channelName) {
@@ -123,4 +119,9 @@ public class ArticleController {
         thread.start();
         return new ResponseEntity<>("Sitemap news mapping has been started.", HttpStatus.OK);
     }
+//    @GetMapping("/latestArticleByChannel")
+//    public ResponseEntity<String> latestArticleByChannel(@RequestParam String channelName) {
+//        String latestLastmod = articleService.getLatestLastmodByChannel(channelName);
+//        return new ResponseEntity<>(latestLastmod, HttpStatus.OK);
+//    }
 }

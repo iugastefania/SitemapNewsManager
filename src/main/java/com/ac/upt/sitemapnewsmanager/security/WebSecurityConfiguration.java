@@ -1,8 +1,8 @@
 package com.ac.upt.sitemapnewsmanager.security;
 
 
-import com.ac.upt.sitemapnewsmanager.security.jwt.AuthEntryPointJwt;
-import com.ac.upt.sitemapnewsmanager.security.jwt.AuthTokenFilter;
+import com.ac.upt.sitemapnewsmanager.security.JsonWebToken.AuthEntryPointJwt;
+import com.ac.upt.sitemapnewsmanager.security.JsonWebToken.AuthTokenFilter;
 import com.ac.upt.sitemapnewsmanager.services.UserDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +20,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
 import java.util.Arrays;
 
 @Configuration
@@ -32,7 +31,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
     private UserDetailService userDetailService;
     @Autowired
-    private AuthEntryPointJwt unauthorizedHandler;
+    private AuthEntryPointJwt authEntryPointJwt;
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
@@ -55,6 +54,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder();
     }
 
+    //maybe not anymore
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -67,14 +67,19 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         return source;
     }
 
+    //new matchers
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable()
-                .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .authorizeRequests().antMatchers("/api/auth/**").permitAll()
+                .exceptionHandling().authenticationEntryPoint(authEntryPointJwt)
+                .and()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .authorizeRequests()
+                .antMatchers("/api/auth/**", "/api/app/**").permitAll()
                 .anyRequest().authenticated();
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
+
 }
 

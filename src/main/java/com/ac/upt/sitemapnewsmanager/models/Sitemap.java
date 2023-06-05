@@ -15,7 +15,7 @@ import javax.persistence.Table;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "sitemaps", schema = "news")
+@Table(name = "sitemap", schema = "news")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Sitemap {
 

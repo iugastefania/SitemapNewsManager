@@ -1,12 +1,12 @@
 package com.ac.upt.sitemapnewsmanager.controllers;
 
 import com.ac.upt.sitemapnewsmanager.models.User;
-import com.ac.upt.sitemapnewsmanager.payload.request.LoginRequest;
-import com.ac.upt.sitemapnewsmanager.payload.request.RegisterRequest;
-import com.ac.upt.sitemapnewsmanager.payload.response.MessageResponse;
-import com.ac.upt.sitemapnewsmanager.payload.response.UserResponse;
+import com.ac.upt.sitemapnewsmanager.payloads.requests.AuthenticationRequest;
+import com.ac.upt.sitemapnewsmanager.payloads.requests.RegisterRequest;
+import com.ac.upt.sitemapnewsmanager.payloads.responses.MessageResponse;
+import com.ac.upt.sitemapnewsmanager.payloads.responses.UserResponse;
 import com.ac.upt.sitemapnewsmanager.repositories.UserRepository;
-import com.ac.upt.sitemapnewsmanager.security.jwt.JwtUtils;
+import com.ac.upt.sitemapnewsmanager.security.JsonWebToken.JwtUtils;
 import com.ac.upt.sitemapnewsmanager.services.UserDetail;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import javax.validation.Valid;
 
 @RestController
@@ -30,45 +29,44 @@ import javax.validation.Valid;
 @Slf4j
 public class UserController {
     @Autowired
-    PasswordEncoder encoder;
+    UserRepository userRepository;
     @Autowired
-    JwtUtils jwtUtils;
+    PasswordEncoder encoder;
     @Autowired
     AuthenticationManager authenticationManager;
     @Autowired
-    UserRepository userRepository;
-
-    @PostMapping("/login")
-    public ResponseEntity<UserResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        UserDetail userDetails = (UserDetail) authentication.getPrincipal();
-        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                .body(new UserResponse(userDetails.getId(),
-                        userDetails.getUsername(),
-                        userDetails.getEmail(),
-                        userDetails.getRole(),
-                        userDetails.getPoints()));
-    }
+    JwtUtils jwtUtils;
 
     @PostMapping("/register")
     public ResponseEntity<MessageResponse> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         log.info("Register user with username: " + registerRequest.getUsername());
 
         if (Boolean.TRUE.equals(userRepository.existsByEmail(registerRequest.getEmail()))) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Email is already in use!"));
+            return ResponseEntity.badRequest().body(new MessageResponse("Email already used!"));
         }
         if (Boolean.TRUE.equals(userRepository.existsByUsername(registerRequest.getUsername()))) {
             return ResponseEntity.badRequest().body(new MessageResponse("Username already exists!"));
         }
 
-        User user = new User(registerRequest.getUsername(),
-                registerRequest.getEmail(),
-                encoder.encode(registerRequest.getPassword()), 0L, "USER");
+        User user = new User(registerRequest.getEmail(),
+                registerRequest.getUsername(),
+                encoder.encode(registerRequest.getPassword()), "USER");
         userRepository.save(user);
-        return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+        return ResponseEntity.ok(new MessageResponse("Registered successfully!"));
+    }
+
+    @PostMapping("/authentication")
+    public ResponseEntity<UserResponse> authenticateUser(@Valid @RequestBody AuthenticationRequest authenticationRequest) {
+        Authentication authentication = authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        UserDetail userDetails = (UserDetail) authentication.getPrincipal();
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .body(new UserResponse(userDetails.getId(),
+                        userDetails.getEmail(),
+                        userDetails.getUsername(),
+                        userDetails.getRole()));
     }
 
     @PostMapping("/logout")

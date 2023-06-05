@@ -12,7 +12,7 @@ import javax.persistence.*;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "urls", schema = "news")
+@Table(name = "url", schema = "news")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Url {
     @Id

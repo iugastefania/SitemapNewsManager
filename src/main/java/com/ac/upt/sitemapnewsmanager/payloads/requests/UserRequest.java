@@ -1,4 +1,4 @@
-package com.ac.upt.sitemapnewsmanager.payload.request;
+package com.ac.upt.sitemapnewsmanager.payloads.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,7 +21,6 @@ public class UserRequest {
 
     private String roles;
 
-    private Integer points;
     private Long id;
 
 }
