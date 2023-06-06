@@ -1,6 +1,5 @@
 package com.ac.upt.sitemapnewsmanager.security;
 
-
 import com.ac.upt.sitemapnewsmanager.security.JsonWebToken.AuthEntryPointJwt;
 import com.ac.upt.sitemapnewsmanager.security.JsonWebToken.AuthTokenFilter;
 import com.ac.upt.sitemapnewsmanager.services.UserDetailService;
@@ -52,7 +51,6 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder();
     }
 
-    //maybe not anymore
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -65,7 +63,6 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         return source;
     }
 
-    //new matchers
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable()

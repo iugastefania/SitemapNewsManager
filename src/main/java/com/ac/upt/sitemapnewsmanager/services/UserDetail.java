@@ -1,6 +1,5 @@
 package com.ac.upt.sitemapnewsmanager.services;
 
-
 import com.ac.upt.sitemapnewsmanager.models.Role;
 import com.ac.upt.sitemapnewsmanager.models.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -9,11 +8,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Objects;
 
 @EqualsAndHashCode
@@ -72,36 +68,4 @@ public class UserDetail implements UserDetails {
         UserDetail user = (UserDetail) o;
         return Objects.equals(id, user.id);
     }
-
-//    public String getRole() {
-//        return role;
-//    }
-//    public Long getId() {
-//        return id;
-//    }
-//    public String getEmail() {
-//        return email;
-//    }
-
-//    @Override
-//    public Collection<? extends GrantedAuthority> getAuthorities() {
-//        return Collections.singletonList(new SimpleGrantedAuthority(role));
-//    }
-//    @Override
-//    public String getPassword() {
-//        return password;
-//    }
-//    @Override
-//    public String getUsername() {
-//        return username;
-//    }
-//    public UserDetail(Long id, String email, String username, String password,
-//                           String role) {
-//        this.id = id;
-//        this.email = email;
-//        this.username = username;
-//        this.password = password;
-//        this.role = role;
-//    }
-
 }

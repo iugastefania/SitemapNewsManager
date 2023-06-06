@@ -12,7 +12,6 @@ import javax.validation.constraints.Size;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
 public class UserRequest {
     private String username;
 

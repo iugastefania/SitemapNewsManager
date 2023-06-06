@@ -9,7 +9,6 @@ import com.ac.upt.sitemapnewsmanager.payloads.responses.UserResponse;
 import com.ac.upt.sitemapnewsmanager.repositories.UserRepository;
 import com.ac.upt.sitemapnewsmanager.security.JsonWebToken.JwtUtils;
 import com.ac.upt.sitemapnewsmanager.services.UserDetail;
-import com.ac.upt.sitemapnewsmanager.services.UserDetailService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -18,11 +17,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.access.prepost.PreAuthorize;
-
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
@@ -45,17 +43,17 @@ public class UserController {
     JwtUtils jwtUtils;
 
     @PostMapping("/register")
-    public ResponseEntity<MessageResponse> registerUser(@Valid @RequestBody RegisterRequest registerRequest,  Authentication authentication) {
+    public ResponseEntity<MessageResponse> registerUser(@Valid @RequestBody RegisterRequest registerRequest, @AuthenticationPrincipal UserDetail userDetails) {
         log.info("Register user with username: " + registerRequest.getUsername());
 
-//        UserDetail userDetails = (UserDetail) authentication.getPrincipal();
-//        if (!userDetails.getRole().equals(Role.ADMINISTRATOR)) {
-//            return ResponseEntity.badRequest().body(new MessageResponse("Only ADMINISTRATOR can create an ADMINISTRATOR account."));
-//        }
+        if (registerRequest.getRole() == Role.ADMINISTRATOR && (userDetails == null || !userDetails.getRole().equals(Role.ADMINISTRATOR))) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Only ADMINISTRATOR can create an ADMINISTRATOR user."));
+        }
 
         if (Boolean.TRUE.equals(userRepository.existsByEmail(registerRequest.getEmail()))) {
             return ResponseEntity.badRequest().body(new MessageResponse("Email already used!"));
         }
+
         if (Boolean.TRUE.equals(userRepository.existsByUsername(registerRequest.getUsername()))) {
             return ResponseEntity.badRequest().body(new MessageResponse("Username already exists!"));
         }
@@ -77,6 +75,9 @@ public class UserController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetail userDetails = (UserDetail) authentication.getPrincipal();
         ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
+
+        log.info("Authentication with username: " + authenticationRequest.getUsername());
+
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
                 .body(new UserResponse(userDetails.getId(),
                         userDetails.getEmail(),
@@ -93,31 +94,25 @@ public class UserController {
     }
 
     @GetMapping("/users")
-//    @PreAuthorize("hasRole('ADMINISTRATOR')")
-    public ResponseEntity<List<UserResponse>> getAllUsers(Authentication authentication) {
-//        UserDetail userDetails = (UserDetail) authentication.getPrincipal();
-//        if (!userDetails.getRole().equals(Role.ADMINISTRATOR)) {
-//            return ResponseEntity.badRequest().body(null); // Return an appropriate response for unauthorized access
-//        }
-
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
         List<User> users = userRepository.findAll();
         List<UserResponse> userResponses = users.stream()
                 .map(user -> new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole()))
                 .collect(Collectors.toList());
-
         return ResponseEntity.ok(userResponses);
     }
 
-    @DeleteMapping("/users/{userId}")
-    public ResponseEntity<MessageResponse> deleteUser(@PathVariable Long userId, Authentication authentication) {
-        UserDetail userDetails = (UserDetail) authentication.getPrincipal();
-        if (!userDetails.getRole().equals(Role.ADMINISTRATOR)) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Only ADMINISTRATOR can delete a user."));
-        }
 
-        Optional<User> userOptional = userRepository.findById(userId);
+
+    @DeleteMapping("/users/{username}")
+    public ResponseEntity<MessageResponse> deleteUser(@PathVariable String username, @AuthenticationPrincipal UserDetail userDetails) {
+        if (userDetails == null || !userDetails.getRole().equals(Role.ADMINISTRATOR)) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Only an ADMINISTRATOR can delete a user."));
+        }
+        Optional<User> userOptional = userRepository.findByUsername(username);
         if (userOptional.isPresent()) {
-            userRepository.deleteById(userId);
+            User user = userOptional.get();
+            userRepository.delete(user);
             return ResponseEntity.ok(new MessageResponse("User deleted successfully."));
         } else {
             return ResponseEntity.notFound().build();
