@@ -97,7 +97,7 @@ public class UserController {
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         List<User> users = userRepository.findAll();
         List<UserResponse> userResponses = users.stream()
-                .map(user -> new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole()))
+                .map(user -> new UserResponse(user.getId(), user.getEmail(), user.getUsername(), user.getRole()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(userResponses);
     }

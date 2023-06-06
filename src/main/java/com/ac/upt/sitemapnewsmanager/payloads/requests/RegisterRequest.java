@@ -24,8 +24,4 @@ public class RegisterRequest {
     private String password;
 
     private Role role;
-
-//    public void changeRole(Role newRole) {
-//        this.role = newRole;
-//    }
 }
