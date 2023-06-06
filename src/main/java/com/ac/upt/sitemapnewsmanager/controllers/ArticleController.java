@@ -47,7 +47,7 @@ public class ArticleController {
     }
 
     @DeleteMapping("/deleteArticle")
-    public ResponseEntity<String> deleteArticle(@RequestBody String loc){
+    public ResponseEntity<String> deleteArticle(@RequestParam String loc){
         articleService.deleteArticle(loc);
         return new ResponseEntity<>("Article with URL: " + loc + " was deleted.", HttpStatus.OK);
     }
