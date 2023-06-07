@@ -4,6 +4,7 @@ import com.ac.upt.sitemapnewsmanager.models.Role;
 import com.ac.upt.sitemapnewsmanager.models.User;
 import com.ac.upt.sitemapnewsmanager.payloads.requests.AuthenticationRequest;
 import com.ac.upt.sitemapnewsmanager.payloads.requests.RegisterRequest;
+import com.ac.upt.sitemapnewsmanager.payloads.requests.UsersRequest;
 import com.ac.upt.sitemapnewsmanager.payloads.responses.MessageResponse;
 import com.ac.upt.sitemapnewsmanager.payloads.responses.UserResponse;
 import com.ac.upt.sitemapnewsmanager.repositories.UserRepository;
@@ -102,8 +103,6 @@ public class UserController {
         return ResponseEntity.ok(userResponses);
     }
 
-
-
     @DeleteMapping("/users/{username}")
     public ResponseEntity<MessageResponse> deleteUser(@PathVariable String username, @AuthenticationPrincipal UserDetail userDetails) {
         if (userDetails == null || !userDetails.getRole().equals(Role.ADMINISTRATOR)) {
@@ -114,6 +113,27 @@ public class UserController {
             User user = userOptional.get();
             userRepository.delete(user);
             return ResponseEntity.ok(new MessageResponse("User deleted successfully."));
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/users/{username}/role")
+    public ResponseEntity<MessageResponse> changeUserRole(
+            @PathVariable String username,
+            @RequestBody UsersRequest usersRequest,
+            @AuthenticationPrincipal UserDetail userDetails
+    ) {
+        if (userDetails == null || !userDetails.getRole().equals(Role.ADMINISTRATOR)) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Only an ADMINISTRATOR can change user roles."));
+        }
+
+        Optional<User> userOptional = userRepository.findByUsername(username);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            user.setRole(usersRequest.getRole());
+            userRepository.save(user);
+            return ResponseEntity.ok(new MessageResponse("User role changed successfully."));
         } else {
             return ResponseEntity.notFound().build();
         }
