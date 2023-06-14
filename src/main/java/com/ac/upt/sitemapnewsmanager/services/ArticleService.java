@@ -1,11 +1,16 @@
 package com.ac.upt.sitemapnewsmanager.services;
 
+
 import com.ac.upt.sitemapnewsmanager.clients.SitemapNewsClient;
 import com.ac.upt.sitemapnewsmanager.exceptions.ArticleNotFoundException;
+import com.ac.upt.sitemapnewsmanager.models.Role;
 import com.ac.upt.sitemapnewsmanager.models.Sitemap;
 import com.ac.upt.sitemapnewsmanager.models.Url;
+import com.ac.upt.sitemapnewsmanager.models.User;
+import com.ac.upt.sitemapnewsmanager.payloads.requests.UrlRequest;
 import com.ac.upt.sitemapnewsmanager.repositories.SitemapRepository;
 import com.ac.upt.sitemapnewsmanager.repositories.UrlRepository;
+import com.ac.upt.sitemapnewsmanager.repositories.UserRepository;
 import com.ctc.wstx.stax.WstxInputFactory;
 import com.ctc.wstx.stax.WstxOutputFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -18,6 +23,7 @@ import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.xml.stream.XMLInputFactory;
@@ -28,10 +34,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,12 +44,14 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class ArticleService {
-
     SitemapRepository sitemapRepository;
 
     UrlRepository urlRepository;
 
     SitemapNewsClient sitemapNewsClient;
+
+    @Autowired
+    UserRepository userRepository;
 
     public Boolean getMappingRunning() {
         return isMappingRunning;
@@ -62,27 +67,11 @@ public class ArticleService {
     private List<String> sitemapsDisallowed;
 
     @Autowired
-    public ArticleService(SitemapRepository sitemapRepository, UrlRepository urlRepository, SitemapNewsClient sitemapNewsClient) {
+    public ArticleService(SitemapRepository sitemapRepository, UrlRepository urlRepository, SitemapNewsClient sitemapNewsClient, UserRepository userRepository) {
         this.sitemapRepository = sitemapRepository;
         this.urlRepository = urlRepository;
         this.sitemapNewsClient = sitemapNewsClient;
-    }
-
-    public Url getArticle(String loc) {
-        Optional<Url> byLoc = urlRepository.findByLoc(loc);
-        if (byLoc.isPresent()) {
-            return byLoc.get();
-        } else {
-            throw new ArticleNotFoundException("Article with loc: " + loc + " was not found.");
-        }
-    }
-
-    public void addArticle(Url article) {
-        Optional<Url> existingArticle = urlRepository.findByLoc(article.getLoc());
-        if (existingArticle.isPresent()) {
-            throw new IllegalArgumentException("Article with URL: " + article.getLoc() + " already exists.");
-        }
-        urlRepository.save(article);
+        this.userRepository = userRepository;
     }
 
     public void updateArticle(Url article) {
@@ -94,10 +83,19 @@ public class ArticleService {
             existingArticle.setThumbnail(article.getThumbnail());
             existingArticle.setLastmod(article.getLastmod());
             existingArticle.setTitle(article.getTitle());
-
+            existingArticle.setUser(article.getUser());
             urlRepository.save(existingArticle);
         } else {
             throw new ArticleNotFoundException("Article with loc: " + article.getLoc() + " was not found.");
+        }
+    }
+
+    public Url getArticle(String loc) {
+        Optional<Url> byLoc = urlRepository.findByLoc(loc);
+        if (byLoc.isPresent()) {
+            return byLoc.get();
+        } else {
+            throw new ArticleNotFoundException("Article with loc: " + loc + " was not found.");
         }
     }
 
@@ -110,19 +108,50 @@ public class ArticleService {
         }
     }
 
+//    public List<UrlResponse> getAllArticlesByChannel(String channelName) {
+//        List<Url> urls = new ArrayList<>();
+//        List<UrlResponse> urlResponses = new ArrayList<>();
+//        urlRepository.findAllByChannelName(channelName).forEach(urls::add);
+//        urls.forEach(x -> urlResponses.add(new UrlResponse(x.getId(), x.getLoc(), x.getLastmod(), x.getChannelName(), x.getTitle(), x.getDescription(), x.getThumbnail(), x.getUser())));
+//        return urlResponses;
+//    }
+
     public List<Url> getAllArticlesByChannel(String channelName) {
         return urlRepository.findAllByChannelName(channelName);
     }
 
-    public void addArticleToChannel(String channelName, Url article) {
-        Optional<Url> existingArticle = urlRepository.findByLoc(article.getLoc());
-        if (existingArticle.isPresent()) {
-            throw new IllegalArgumentException("Article with URL: " + article.getLoc() + " already exists.");
-        }
-        article.setChannelName(channelName);
-        urlRepository.save(article);
+    public Url addArticle(UrlRequest urlRequest) throws Exception {
+        Optional<User> user = userRepository.findByUsername(urlRequest.getUser());
+        if (user.isPresent()) {
+            Optional<Url> existingArticle = urlRepository.findByLoc(urlRequest.getLoc());
+            if (existingArticle.isPresent()) {
+                throw new IllegalArgumentException("Article with URL: " + urlRequest.getLoc() + " already exists.");
+            } else {
+                User u = user.get();
+                Url entity = new Url(urlRequest.getLoc(), urlRequest.getLastmod(), urlRequest.getChannelName(), urlRequest.getTitle(), urlRequest.getDescription(), urlRequest.getThumbnail(), u);
+                urlRepository.save(entity);
+                return entity;
+            }
+        } else throw new Exception("Invalid user");
     }
 
+
+    public Url addArticleToChannel(String channelName, UrlRequest urlRequest) throws Exception {
+        Optional<User> user = userRepository.findByUsername(urlRequest.getUser());
+        if (user.isPresent()) {
+            Optional<Url> existingArticle = urlRepository.findByLoc(urlRequest.getLoc());
+            if (existingArticle.isPresent()) {
+                throw new IllegalArgumentException("Article with URL: " + urlRequest.getLoc() + " already exists.");
+            } else {
+                User u = user.get();
+                Url entity = new Url(urlRequest.getLoc(), urlRequest.getLastmod(), channelName, urlRequest.getTitle(), urlRequest.getDescription(), urlRequest.getThumbnail(), u);
+                urlRepository.save(entity);
+                return entity;
+            }
+        } else throw new Exception("Invalid user");
+    }
+
+    //
     public void updateArticleInChannel(String channelName, Url article) {
         Optional<Url> existingArticle = urlRepository.findByChannelNameAndLoc(channelName, article.getLoc());
         if (existingArticle.isPresent()) {
@@ -131,6 +160,7 @@ public class ArticleService {
             updatedArticle.setDescription(article.getDescription());
             updatedArticle.setLastmod(article.getLastmod());
             updatedArticle.setTitle(article.getTitle());
+//            existingArticle.setUser(article.getUser());
             urlRepository.save(updatedArticle);
         } else {
             throw new ArticleNotFoundException("Article with URL: " + article.getLoc() + " and channel name: " + channelName + " was not found.");
@@ -146,74 +176,18 @@ public class ArticleService {
         }
     }
 
-
-    public List<Sitemap> getSitemapNews() {
-        String stringResponse = sitemapNewsClient.getStringResponse();
-        XMLInputFactory input = new WstxInputFactory();
-        input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
-        XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
-        try {
-            List<Sitemap> sitemaps = xmlMapper.readValue(stringResponse, new TypeReference<List<Sitemap>>() {});
-            sitemaps = sitemaps.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
-            return sitemaps;
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+    public List<String> getAllChannelNames() {
+        List<Url> urls = urlRepository.findAll();
+        return urls.stream()
+                .map(Url::getChannelName)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
-    public List<Url> getUrlNews(){
-        XMLInputFactory input = new WstxInputFactory();
-        input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
-        XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
-        List<Sitemap> sitemaps = getSitemapNews();
-        List<Url> processedUrls = new ArrayList<>();
-        for (Sitemap sitemap : sitemaps) {
-            String sitemapUrl = sitemap.getLoc();
-            if (sitemapsDisallowed.contains(sitemapUrl)) {
-                continue;
-            }
-            String channelName = sitemapUrl.substring(sitemapUrl.indexOf("https://www.telegraph.co.uk/") + "https://www.telegraph.co.uk/".length(), sitemapUrl.lastIndexOf("/sitemap"));
-            String urlStringResponse = getStringResponseFromUrl(sitemapUrl);
-            List<Url> urlList;
-            try {
-                urlList = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Url>>() {});
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-            urlList = urlList.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
-            urlList.forEach(url -> url.setChannelName(channelName));
-            urlList.forEach(url -> url.setDescription("description"));
-            urlList.forEach(url -> url.setTitle("title"));
-            urlList.forEach(url -> url.setThumbnail("https://www.telegraph.co.uk/content/dam/wrestling/2021/04/08/TELEMMGLPICT000154956334_trans_NvBQzQNjv4Bqolk963VRNCok71xFe0ekZg6zy7pZl_fyly167s83uJA.jpeg?impolicy=logo-overlay"));
-//            for (Url url : urlList){
-//                String urlLoc = url.getLoc();
-//                Thread.sleep(1000);
-//
-//                // retrieve the web page source using Jsoup parse method
-//                Document document = Jsoup.parse(new URL(urlLoc), 10000);
-//
-//                String description = document.select("meta[name=description]").attr("content");
-//                if (description.isEmpty()) {
-//                    // set value for description if it is empty
-//                    String[] pathSegments = urlLoc.split("/");
-//                    String desiredString = pathSegments[pathSegments.length - 1].replace("-", " ");
-//                    description = desiredString.substring(0, 1).toUpperCase() + desiredString.substring(1);
-//                }
-//
-//                String thumbnail = document.select("meta[property=og:image]").attr("content");
-//
-//                // set the extracted values in the Url object
-//                url.setDescription(description);
-//                url.setThumbnail(thumbnail);
-//            }
-//            return  urlList;
-            processedUrls.addAll(urlList);
-        }
-        return processedUrls;
-    }
     public List<Url> getAllUrls() {
         return urlRepository.findAll();
     }
+
     public Long countUrlsByChannel(String channelName) {
         return urlRepository.countAllByChannelName(channelName);
     }
@@ -221,7 +195,6 @@ public class ArticleService {
     public String getLatestLastmodByChannel(String channelName) {
         return urlRepository.findLatestLastmodByChannelName(channelName);
     }
-
 
     @Scheduled(fixedDelay = 300000)
     public void startSitemapNewsMapping() {
@@ -240,7 +213,14 @@ public class ArticleService {
                     log.error("Failed to parse the sitemap response.", e);
                     return;
                 }
-                sitemaps = sitemaps.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
+                sitemaps = sitemaps.stream()
+                        .filter(sitemap -> sitemap.getLoc() != null)
+                        .peek(sitemap -> {
+                            String sitemapUrl = sitemap.getLoc();
+                            String channel = sitemapUrl.substring(sitemapUrl.indexOf("https://www.telegraph.co.uk/") + "https://www.telegraph.co.uk/".length(), sitemapUrl.lastIndexOf("/sitemap"));
+                            sitemap.setChannel(channel);
+                        })
+                        .collect(Collectors.toList());
                 sitemapRepository.saveAll(sitemaps);
                 log.info("Sitemap mapping has ended.");
                 ExecutorService executorService = Executors.newFixedThreadPool(10);
@@ -346,12 +326,68 @@ public class ArticleService {
         }
     }
 
-    public List<String> getAllChannelNames() {
-        List<Url> urls = urlRepository.findAll();
-        return urls.stream()
-                .map(Url::getChannelName)
-                .distinct()
-                .collect(Collectors.toList());
+    public List<Sitemap> getSitemapNews() {
+        String stringResponse = sitemapNewsClient.getStringResponse();
+        XMLInputFactory input = new WstxInputFactory();
+        input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
+        XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
+        try {
+            List<Sitemap> sitemaps = xmlMapper.readValue(stringResponse, new TypeReference<List<Sitemap>>() {});
+            sitemaps = sitemaps.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
+            return sitemaps;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    public List<Url> getUrlNews(){
+        XMLInputFactory input = new WstxInputFactory();
+        input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
+        XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
+        List<Sitemap> sitemaps = getSitemapNews();
+        List<Url> processedUrls = new ArrayList<>();
+        for (Sitemap sitemap : sitemaps) {
+            String sitemapUrl = sitemap.getLoc();
+            if (sitemapsDisallowed.contains(sitemapUrl)) {
+                continue;
+            }
+            String channelName = sitemapUrl.substring(sitemapUrl.indexOf("https://www.telegraph.co.uk/") + "https://www.telegraph.co.uk/".length(), sitemapUrl.lastIndexOf("/sitemap"));
+            String urlStringResponse = getStringResponseFromUrl(sitemapUrl);
+            List<Url> urlList;
+            try {
+                urlList = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Url>>() {});
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            urlList = urlList.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
+            urlList.forEach(url -> url.setChannelName(channelName));
+            urlList.forEach(url -> url.setDescription("description"));
+            urlList.forEach(url -> url.setTitle("title"));
+            urlList.forEach(url -> url.setThumbnail("https://www.telegraph.co.uk/content/dam/wrestling/2021/04/08/TELEMMGLPICT000154956334_trans_NvBQzQNjv4Bqolk963VRNCok71xFe0ekZg6zy7pZl_fyly167s83uJA.jpeg?impolicy=logo-overlay"));
+//            for (Url url : urlList){
+//                String urlLoc = url.getLoc();
+//                Thread.sleep(1000);
+//
+//                // retrieve the web page source using Jsoup parse method
+//                Document document = Jsoup.parse(new URL(urlLoc), 10000);
+//
+//                String description = document.select("meta[name=description]").attr("content");
+//                if (description.isEmpty()) {
+//                    // set value for description if it is empty
+//                    String[] pathSegments = urlLoc.split("/");
+//                    String desiredString = pathSegments[pathSegments.length - 1].replace("-", " ");
+//                    description = desiredString.substring(0, 1).toUpperCase() + desiredString.substring(1);
+//                }
+//
+//                String thumbnail = document.select("meta[property=og:image]").attr("content");
+//
+//                // set the extracted values in the Url object
+//                url.setDescription(description);
+//                url.setThumbnail(thumbnail);
+//            }
+//            return  urlList;
+            processedUrls.addAll(urlList);
+        }
+        return processedUrls;
+    }
 }

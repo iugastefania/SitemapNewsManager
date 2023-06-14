@@ -2,6 +2,8 @@ package com.ac.upt.sitemapnewsmanager.controllers;
 
 import com.ac.upt.sitemapnewsmanager.models.Sitemap;
 import com.ac.upt.sitemapnewsmanager.models.Url;
+import com.ac.upt.sitemapnewsmanager.payloads.requests.UrlRequest;
+import com.ac.upt.sitemapnewsmanager.payloads.responses.UrlResponse;
 import com.ac.upt.sitemapnewsmanager.services.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,7 @@ import java.util.Map;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/api/app")
@@ -32,18 +35,19 @@ public class ArticleController {
     }
 
     @PostMapping("/addArticle")
-    public ResponseEntity<String> addArticle(@RequestBody Url article) {
-        articleService.addArticle(article);
-        return new ResponseEntity<>(HttpStatus.OK);
-//        return new ResponseEntity<>("Article with URL: " + article.getLoc() + " was added.", HttpStatus.OK);
+    public ResponseEntity<Url> addArticle(@Valid @RequestBody UrlRequest urlRequest) {
+        try {
+            Url article = articleService.addArticle(urlRequest);
+            return new ResponseEntity<>(article, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PutMapping("/updateArticle")
-    public ResponseEntity<String> updateArticle(@RequestBody Url article){
-        articleService.updateArticle(article);
-        return new ResponseEntity<>(HttpStatus.OK);
-
-//        return new ResponseEntity<>("Article with URL: " + article.getLoc() + " was updated.", HttpStatus.OK);
+    public ResponseEntity<String> updateArticle(@Valid @RequestBody Url article){
+            articleService.updateArticle(article);
+            return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/deleteArticle")
@@ -51,17 +55,34 @@ public class ArticleController {
         articleService.deleteArticle(loc);
         return new ResponseEntity<>("Article with URL: " + loc + " was deleted.", HttpStatus.OK);
     }
+
     @GetMapping(value = "/getAllArticlesByChannel/{channelName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Url>> getAllArticlesByChannel(@PathVariable String channelName) {
         List<Url> articles = articleService.getAllArticlesByChannel(channelName);
         return new ResponseEntity<>(articles, HttpStatus.OK);
     }
+//
+//    @GetMapping(value = "/getAllArticlesByChannel/{channelName}", produces = MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<List<UrlResponse>> getAllArticlesByChannel(@PathVariable String channelName) {
+//        try {
+//            List<UrlResponse> allArticlesByChannel = articleService.getAllArticlesByChannel(channelName);
+//            return new ResponseEntity<>(allArticlesByChannel, HttpStatus.OK);
+//        } catch (Exception e) {
+//            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+//        }
+//}
+
 
     @PostMapping("/addArticleToChannel")
-    public ResponseEntity<String> addArticleToChannel(@RequestParam String channelName, @RequestBody Url article) {
-        articleService.addArticleToChannel(channelName, article);
-        return new ResponseEntity<>("Article with URL: " + article.getLoc() + " was added to channel: " + channelName, HttpStatus.OK);
+    public ResponseEntity<Url> addArticleToChannel(@RequestParam String channelName, @Valid @RequestBody UrlRequest urlRequest) {
+        try {
+            Url addedArticle = articleService.addArticleToChannel(channelName, urlRequest);
+            return new ResponseEntity<>(addedArticle, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
     }
+
 
     @PutMapping("/updateArticleInChannel")
     public ResponseEntity<String> updateArticleInChannel(@RequestParam String channelName, @RequestBody Url article){
