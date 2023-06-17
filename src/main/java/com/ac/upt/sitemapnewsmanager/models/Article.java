@@ -19,6 +19,9 @@ public class Article {
   @JsonIgnore
   private Long id;
 
+  @Column(name = "sitemap_loc")
+  private String sitemapLoc;
+
   private String loc;
   private String lastmod;
   private String channelName;
@@ -32,9 +35,7 @@ public class Article {
   @Column(columnDefinition = "text")
   private String thumbnail;
 
-  @ManyToOne(
-      optional = true,
-      cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+  @ManyToOne(optional = true, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @JsonBackReference
   @EqualsAndHashCode.Exclude
   @ToString.Exclude
@@ -42,13 +43,15 @@ public class Article {
   private User user;
 
   public Article(
-      String loc,
-      String lastmod,
-      String channelName,
-      String title,
-      String description,
-      String thumbnail,
-      User user) {
+          String sitemapLoc,
+          String loc,
+          String lastmod,
+          String channelName,
+          String title,
+          String description,
+          String thumbnail,
+          User user) {
+    this.sitemapLoc = sitemapLoc;
     this.loc = loc;
     this.lastmod = lastmod;
     this.channelName = channelName;
@@ -61,5 +64,4 @@ public class Article {
   public void setUser(User user) {
     this.user = user;
   }
-
 }

@@ -19,4 +19,6 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 
   @Query("SELECT MAX(u.lastmod) FROM Article u WHERE u.channelName = :channelName")
   String findLatestLastmodByChannelName(@Param("channelName") String channelName);
+
+  List<Article> findAllBySitemapLoc(String sitemapLoc);
 }

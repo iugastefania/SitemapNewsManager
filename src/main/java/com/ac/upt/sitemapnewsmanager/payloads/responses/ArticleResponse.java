@@ -10,18 +10,12 @@ import lombok.*;
 @EqualsAndHashCode
 public class ArticleResponse {
   private Long id;
-
   private String loc;
-
   private String lastmod;
-
   private String channelName;
-
   private String title;
-
   private String description;
-
   private String thumbnail;
-
   private User user;
+  private String sitemapLoc;
 }

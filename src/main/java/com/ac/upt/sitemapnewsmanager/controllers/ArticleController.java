@@ -95,15 +95,15 @@ public class ArticleController {
     return ResponseEntity.ok(channelNames);
   }
 
-  @GetMapping("/getSitemapNews")
-  public ResponseEntity<List<Sitemap>> getSitemapNews() {
-    List<Sitemap> sitemapNews = articleService.getSitemapNews();
+  @GetMapping("/getAllSitemaps")
+  public ResponseEntity<List<Sitemap>> getAllSitemaps() {
+    List<Sitemap> sitemapNews = articleService.getAllSitemaps();
     return ResponseEntity.ok(sitemapNews);
   }
 
   @GetMapping("/getUrlNews")
-  public ResponseEntity<List<Article>> getUrlNews(@RequestParam String sitemapName){
-    List<Article> articleNews = articleService.getUrlNews(sitemapName);
+  public ResponseEntity<List<Article>> getUrlNews(@RequestParam String sitemapLoc){
+    List<Article> articleNews = articleService.getUrlNews(sitemapLoc);
     return ResponseEntity.ok(articleNews);
   }
 
