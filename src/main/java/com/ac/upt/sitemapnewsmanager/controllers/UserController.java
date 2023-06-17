@@ -9,7 +9,7 @@ import com.ac.upt.sitemapnewsmanager.payloads.responses.MessageResponse;
 import com.ac.upt.sitemapnewsmanager.payloads.responses.UserResponse;
 import com.ac.upt.sitemapnewsmanager.repositories.UserRepository;
 import com.ac.upt.sitemapnewsmanager.security.JsonWebToken.CustomJwtUtils;
-import com.ac.upt.sitemapnewsmanager.services.UserDetail;
+import com.ac.upt.sitemapnewsmanager.services.UserDetailsImplementation;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -43,7 +43,7 @@ public class UserController {
   @PostMapping("/register")
   public ResponseEntity<MessageResponse> registerUser(
       @Valid @RequestBody RegisterRequest registerRequest,
-      @AuthenticationPrincipal UserDetail userDetails) {
+      @AuthenticationPrincipal UserDetailsImplementation userDetails) {
     log.info("Register user with username: " + registerRequest.getUsername());
 
     if (registerRequest.getRole() == Role.ADMINISTRATOR
@@ -80,7 +80,7 @@ public class UserController {
             new UsernamePasswordAuthenticationToken(
                 authenticationRequest.getUsername(), authenticationRequest.getPassword()));
     SecurityContextHolder.getContext().setAuthentication(authentication);
-    UserDetail userDetails = (UserDetail) authentication.getPrincipal();
+    UserDetailsImplementation userDetails = (UserDetailsImplementation) authentication.getPrincipal();
     ResponseCookie jwtCookie = customJwtUtils.generateJwtCookie(userDetails);
 
     log.info("Authentication with username: " + authenticationRequest.getUsername());
@@ -119,7 +119,7 @@ public class UserController {
 
   @DeleteMapping("/users/{username}")
   public ResponseEntity<MessageResponse> deleteUser(
-      @PathVariable String username, @AuthenticationPrincipal UserDetail userDetails) {
+      @PathVariable String username, @AuthenticationPrincipal UserDetailsImplementation userDetails) {
     if (userDetails == null || !userDetails.getRole().equals(Role.ADMINISTRATOR)) {
       return ResponseEntity.badRequest()
           .body(new MessageResponse("Only an ADMINISTRATOR can delete a user."));
@@ -138,7 +138,7 @@ public class UserController {
   public ResponseEntity<MessageResponse> changeUserRole(
       @PathVariable String username,
       @RequestBody UsersRequest usersRequest,
-      @AuthenticationPrincipal UserDetail userDetails) {
+      @AuthenticationPrincipal UserDetailsImplementation userDetails) {
     if (userDetails == null || !userDetails.getRole().equals(Role.ADMINISTRATOR)) {
       return ResponseEntity.badRequest()
           .body(new MessageResponse("Only an ADMINISTRATOR can change user roles."));

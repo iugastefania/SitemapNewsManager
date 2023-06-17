@@ -1,6 +1,6 @@
 package com.ac.upt.sitemapnewsmanager.security.JsonWebToken;
 
-import com.ac.upt.sitemapnewsmanager.services.UserDetail;
+import com.ac.upt.sitemapnewsmanager.services.UserDetailsImplementation;
 import io.jsonwebtoken.*;
 import java.util.Date;
 import javax.servlet.http.Cookie;
@@ -42,7 +42,7 @@ public class CustomJwtUtils {
     return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
   }
 
-  public ResponseCookie generateJwtCookie(UserDetail userPrincipal) {
+  public ResponseCookie generateJwtCookie(UserDetailsImplementation userPrincipal) {
     String jwt = generateTokenFromUsername(userPrincipal.getUsername());
     return ResponseCookie.from(jwtCookieName, jwt)
         .path("/api")

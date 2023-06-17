@@ -16,7 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Getter
 @Setter
 @AllArgsConstructor
-public class UserDetail implements UserDetails {
+public class UserDetailsImplementation implements UserDetails {
   private static final long serialVersionUID = 1L;
 
   private Long id;
@@ -29,8 +29,8 @@ public class UserDetail implements UserDetails {
 
   private Role role;
 
-  public static UserDetail build(User user) {
-    return new UserDetail(
+  public static UserDetailsImplementation build(User user) {
+    return new UserDetailsImplementation(
         user.getId(), user.getEmail(), user.getUsername(), user.getPassword(), user.getRole());
   }
 
@@ -63,7 +63,7 @@ public class UserDetail implements UserDetails {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    UserDetail user = (UserDetail) o;
+    UserDetailsImplementation user = (UserDetailsImplementation) o;
     return Objects.equals(id, user.id);
   }
 }

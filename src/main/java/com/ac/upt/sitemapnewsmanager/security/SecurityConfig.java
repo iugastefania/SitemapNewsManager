@@ -2,7 +2,7 @@ package com.ac.upt.sitemapnewsmanager.security;
 
 import com.ac.upt.sitemapnewsmanager.security.JsonWebToken.CustomAuthEntryPoint;
 import com.ac.upt.sitemapnewsmanager.security.JsonWebToken.CustomAuthTokenFilter;
-import com.ac.upt.sitemapnewsmanager.services.UserDetailServiceImpl;
+import com.ac.upt.sitemapnewsmanager.services.UserDetailsServiceImplementation;
 import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -25,7 +25,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-  @Autowired private UserDetailServiceImpl userDetailServiceImpl;
+  @Autowired private UserDetailsServiceImplementation userDetailsServiceImplementation;
   @Autowired private CustomAuthEntryPoint customAuthEntryPoint;
 
   @Bean
@@ -37,7 +37,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
   public void configure(AuthenticationManagerBuilder authenticationManagerBuilder)
       throws Exception {
     authenticationManagerBuilder
-        .userDetailsService(userDetailServiceImpl)
+        .userDetailsService(userDetailsServiceImplementation)
         .passwordEncoder(passwordEncoder());
   }
 
