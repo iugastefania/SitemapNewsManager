@@ -10,7 +10,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "url", schema = "news")
+@Table(name = "articles", schema = "news")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Article {
   @Id

@@ -60,19 +60,6 @@ public class ArticleController {
     List<Article> articles = articleService.getAllArticlesByChannel(channelName);
     return new ResponseEntity<>(articles, HttpStatus.OK);
   }
-  //
-  //    @GetMapping(value = "/getAllArticlesByChannel/{channelName}", produces =
-  // MediaType.APPLICATION_JSON_VALUE)
-  //    public ResponseEntity<List<ArticleResponse>> getAllArticlesByChannel(@PathVariable String
-  // channelName) {
-  //        try {
-  //            List<ArticleResponse> allArticlesByChannel =
-  // articleService.getAllArticlesByChannel(channelName);
-  //            return new ResponseEntity<>(allArticlesByChannel, HttpStatus.OK);
-  //        } catch (Exception e) {
-  //            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-  //        }
-  // }
 
   @PostMapping("/addArticleToChannel")
   public ResponseEntity<Article> addArticleToChannel(
@@ -157,4 +144,18 @@ public class ArticleController {
   //        String latestLastmod = articleService.getLatestLastmodByChannel(channelName);
   //        return new ResponseEntity<>(latestLastmod, HttpStatus.OK);
   //    }
+
+  //
+  //    @GetMapping(value = "/getAllArticlesByChannel/{channelName}", produces =
+  // MediaType.APPLICATION_JSON_VALUE)
+  //    public ResponseEntity<List<ArticleResponse>> getAllArticlesByChannel(@PathVariable String
+  // channelName) {
+  //        try {
+  //            List<ArticleResponse> allArticlesByChannel =
+  // articleService.getAllArticlesByChannel(channelName);
+  //            return new ResponseEntity<>(allArticlesByChannel, HttpStatus.OK);
+  //        } catch (Exception e) {
+  //            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+  //        }
+  // }
 }

@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "sitemap", schema = "news")
+@Table(name = "sitemaps", schema = "news")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Sitemap {
 

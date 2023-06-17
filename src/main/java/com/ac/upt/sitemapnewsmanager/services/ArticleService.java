@@ -32,11 +32,13 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
+@EnableScheduling
 public class ArticleService {
   SitemapRepository sitemapRepository;
 
@@ -217,8 +219,8 @@ public class ArticleService {
     return articleRepository.findLatestLastmodByChannelName(channelName);
   }
 
-  @Scheduled(fixedDelay = 300000)
-  public void startSitemapNewsMapping() {
+@Scheduled(cron = "0 0 0 * * *", zone = "Europe/Athens")
+public void startSitemapNewsMapping() {
     if (!isMappingRunning) {
       isMappingRunning = Boolean.TRUE;
       log.info("Sitemap mapping has started.");
