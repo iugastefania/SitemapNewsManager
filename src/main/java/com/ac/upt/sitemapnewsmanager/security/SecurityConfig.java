@@ -1,7 +1,7 @@
 package com.ac.upt.sitemapnewsmanager.security;
 
-import com.ac.upt.sitemapnewsmanager.security.JsonWebToken.AuthEntryPointJwt;
-import com.ac.upt.sitemapnewsmanager.security.JsonWebToken.AuthTokenFilter;
+import com.ac.upt.sitemapnewsmanager.security.JsonWebToken.CustomAuthEntryPoint;
+import com.ac.upt.sitemapnewsmanager.security.JsonWebToken.CustomAuthTokenFilter;
 import com.ac.upt.sitemapnewsmanager.services.UserDetailServiceImpl;
 import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +26,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
   @Autowired private UserDetailServiceImpl userDetailServiceImpl;
-  @Autowired private AuthEntryPointJwt authEntryPointJwt;
+  @Autowired private CustomAuthEntryPoint customAuthEntryPoint;
 
   @Bean
-  public AuthTokenFilter authenticationJwtTokenFilter() {
-    return new AuthTokenFilter();
+  public CustomAuthTokenFilter authenticationJwtTokenFilter() {
+    return new CustomAuthTokenFilter();
   }
 
   @Override
@@ -72,7 +72,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .csrf()
         .disable()
         .exceptionHandling()
-        .authenticationEntryPoint(authEntryPointJwt)
+        .authenticationEntryPoint(customAuthEntryPoint)
         .and()
         .sessionManagement()
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

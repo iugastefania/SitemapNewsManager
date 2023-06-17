@@ -18,7 +18,7 @@ public class ArticleControllerTest {
   //    @Test
   //    public void testGetArticleEndpoint() throws Exception{
   //        String loc = "string";
-  //        Url article = new Url(null, "string", "string", "string", "string", "string", "string");
+  //        Article article = new Article(null, "string", "string", "string", "string", "string", "string");
   //        when(articleService.getArticle(any())).thenReturn(article);
   //        mockMvc.perform(get("/getArticle").param("loc",
   // loc)).andExpect(status().isOk()).andExpect(content().string(containsString("{\"loc\":\"string\",\"lastmod\":\"string\",\"channelName\":\"string\",\"title\":\"string\",\"description\":\"string\",\"thumbnail\":\"string\"}")));
@@ -26,7 +26,7 @@ public class ArticleControllerTest {
   //
   //    @Test
   //    public void testAddArticleEndpoint() throws Exception{
-  //        Url article = new Url(null, "string", "string", "string", "string", "string", "string");
+  //        Article article = new Article(null, "string", "string", "string", "string", "string", "string");
   //
   // mockMvc.perform(post("/addArticle").contentType(MediaType.APPLICATION_JSON).content("{\n" +
   //                "  \"loc\": \"string\",\n" +
@@ -41,7 +41,7 @@ public class ArticleControllerTest {
   //
   //    @Test
   //    public void testUpdateArticleEndpoint() throws Exception{
-  //        Url article = new Url(null, "string", "string", "string", "string", "string", "string");
+  //        Article article = new Article(null, "string", "string", "string", "string", "string", "string");
   //
   // mockMvc.perform(put("/updateArticle").contentType(MediaType.APPLICATION_JSON).content("{\n" +
   //                "  \"loc\": \"string\",\n" +
@@ -56,7 +56,7 @@ public class ArticleControllerTest {
   //
   //    @Test
   //    public void testDeleteArticleEndpoint() throws Exception{
-  //        Url article = new Url(null, "string", "string", "string", "string", "string", "string");
+  //        Article article = new Article(null, "string", "string", "string", "string", "string", "string");
   //        String loc = article.getLoc();
   //
   // mockMvc.perform(delete("/deleteArticle").contentType(MediaType.APPLICATION_JSON).content(loc)).andExpect(status().isOk());
@@ -73,7 +73,7 @@ public class ArticleControllerTest {
   //
   //    @Test
   //    public void testGetUrlNewsEndpoint() throws Exception{
-  //        List<Url> urlList = Arrays.asList(new Url(null, "string", "string", "string", "string",
+  //        List<Article> urlList = Arrays.asList(new Article(null, "string", "string", "string", "string",
   // "string", "string"));
   //        when(articleService.getUrlNews()).thenReturn(urlList);
   //
@@ -83,10 +83,10 @@ public class ArticleControllerTest {
   ////    @Test
   ////    public void testGetAllArticlesByChannelEndpoint() throws Exception {
   ////        String channelName = "channel";
-  ////        List<Url> articles = Arrays.asList(
-  ////                new Url(null, "url1", "2023-01-01", "channel", "Description 1", "Thumbnail 1",
+  ////        List<Article> articles = Arrays.asList(
+  ////                new Article(null, "url1", "2023-01-01", "channel", "Description 1", "Thumbnail 1",
   // "Title 1"),
-  ////                new Url(null, "url2", "2023-01-02", "channel", "Description 2", "Thumbnail 2",
+  ////                new Article(null, "url2", "2023-01-02", "channel", "Description 2", "Thumbnail 2",
   // "Title 2")
   ////        );
   ////        when(articleService.getAllArticlesByChannel(channelName)).thenReturn(articles);
@@ -99,7 +99,7 @@ public class ArticleControllerTest {
   ////    @Test
   ////    public void testAddArticleToChannelEndpoint() throws Exception {
   ////        String channelName = "channel";
-  ////        Url article = new Url(null, "url", "2023-01-01", channelName, "Description",
+  ////        Article article = new Article(null, "url", "2023-01-01", channelName, "Description",
   // "Thumbnail", "Title");
   ////        mockMvc.perform(post("/addArticleToChannel")
   ////                        .param("channelName", channelName)
@@ -119,7 +119,7 @@ public class ArticleControllerTest {
   ////    @Test
   ////    public void testUpdateArticleInChannelEndpoint() throws Exception {
   ////        String channelName = "channel";
-  ////        Url article = new Url(null, "url", "2023-01-01", channelName, "Description",
+  ////        Article article = new Article(null, "url", "2023-01-01", channelName, "Description",
   // "Thumbnail", "Title");
   ////        mockMvc.perform(put("/updateArticleInChannel")
   ////                        .param("channelName", channelName)

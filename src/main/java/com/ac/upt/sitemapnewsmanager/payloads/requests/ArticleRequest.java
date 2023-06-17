@@ -6,7 +6,7 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @Setter
-public class UrlRequest {
+public class ArticleRequest {
   private String loc;
 
   private String lastmod;

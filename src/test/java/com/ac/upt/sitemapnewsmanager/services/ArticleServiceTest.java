@@ -8,26 +8,26 @@ import static org.mockito.Mockito.*;
 public class ArticleServiceTest {
   //    SitemapRepository sitemapRepository = mock(SitemapRepository.class);
   //
-  //    UrlRepository urlRepository = mock(UrlRepository.class);
+  //    ArticleRepository articleRepository = mock(ArticleRepository.class);
   //
   //    SitemapNewsClient sitemapNewsClient = mock(SitemapNewsClient.class);
   //
-  //    ArticleService articleService = new ArticleService(sitemapRepository, urlRepository,
+  //    ArticleService articleService = new ArticleService(sitemapRepository, articleRepository,
   // sitemapNewsClient);
   //
   //    @Test
   //    public void testGetArticleHappyPath() {
-  //        Optional<Url> expectedArticle = Optional.of(new Url(null, "string", "string", "string",
+  //        Optional<Article> expectedArticle = Optional.of(new Article(null, "string", "string", "string",
   // "string", "string", "string"));
-  //        when(urlRepository.findByLoc(anyString())).thenReturn(expectedArticle);
-  //        Url resultArticle = articleService.getArticle("string");
+  //        when(articleRepository.findByLoc(anyString())).thenReturn(expectedArticle);
+  //        Article resultArticle = articleService.getArticle("string");
   //        assertEquals(expectedArticle.get(), resultArticle);
   //    }
   //
   //    @Test
   //    public void testGetArticle_ArticleNotFound() {
-  //        Optional<Url> expectedArticle = Optional.empty();
-  //        when(urlRepository.findByLoc(anyString())).thenReturn(expectedArticle);
+  //        Optional<Article> expectedArticle = Optional.empty();
+  //        when(articleRepository.findByLoc(anyString())).thenReturn(expectedArticle);
   //        Exception exception = assertThrows(ArticleNotFoundException.class, () -> {
   //            articleService.getArticle("string");
   //        });
@@ -40,26 +40,26 @@ public class ArticleServiceTest {
   //
   //    @Test
   //    public void addArticleTest() {
-  //        Url expectedArticle = new Url(null, "string", "string", "string", "string", "string",
+  //        Article expectedArticle = new Article(null, "string", "string", "string", "string", "string",
   // "string");
   //        articleService.addArticle(expectedArticle);
-  //        verify(urlRepository, times(1)).save(expectedArticle);
+  //        verify(articleRepository, times(1)).save(expectedArticle);
   //    }
   //
   //    @Test
   //    public void testUpdateArticleHappyPath() {
-  //        Url expectedArticle = new Url(null, "string", "string", "string", "string", "string",
+  //        Article expectedArticle = new Article(null, "string", "string", "string", "string", "string",
   // "string");
-  //        when(urlRepository.findByLoc(anyString())).thenReturn(Optional.of(expectedArticle));
+  //        when(articleRepository.findByLoc(anyString())).thenReturn(Optional.of(expectedArticle));
   //        articleService.updateArticle(expectedArticle);
-  //        verify(urlRepository, times(1)).save(expectedArticle);
+  //        verify(articleRepository, times(1)).save(expectedArticle);
   //    }
   //
   //    @Test
   //    public void testUpdateArticle_ArticleNotFound() {
-  //        when(urlRepository.findByLoc(anyString())).thenReturn(Optional.empty());
+  //        when(articleRepository.findByLoc(anyString())).thenReturn(Optional.empty());
   //        Exception exception = assertThrows(ArticleNotFoundException.class, () -> {
-  //            articleService.updateArticle(new Url(null, "string", "string", "string", "string",
+  //            articleService.updateArticle(new Article(null, "string", "string", "string", "string",
   // "string", "string"));
   //        });
   //
@@ -71,17 +71,17 @@ public class ArticleServiceTest {
   //
   //    @Test
   //    public void testDeleteArticleHappyPath() {
-  //        Optional<Url> expectedArticle = Optional.of(new Url(null, "string", "string", "string",
+  //        Optional<Article> expectedArticle = Optional.of(new Article(null, "string", "string", "string",
   // "string", "string", "string"));
-  //        when(urlRepository.findByLoc(anyString())).thenReturn(expectedArticle);
+  //        when(articleRepository.findByLoc(anyString())).thenReturn(expectedArticle);
   //        articleService.deleteArticle("string");
-  //        verify(urlRepository, times(1)).deleteById(expectedArticle.get().getId());
+  //        verify(articleRepository, times(1)).deleteById(expectedArticle.get().getId());
   //    }
   //
   //    @Test
   //    public void testDeleteArticle_ArticleNotFound() {
-  //        Optional<Url> expectedArticle = Optional.empty();
-  //        when(urlRepository.findByLoc(anyString())).thenReturn(expectedArticle);
+  //        Optional<Article> expectedArticle = Optional.empty();
+  //        when(articleRepository.findByLoc(anyString())).thenReturn(expectedArticle);
   //        Exception exception = assertThrows(ArticleNotFoundException.class, () -> {
   //            articleService.deleteArticle("string");
   //        });

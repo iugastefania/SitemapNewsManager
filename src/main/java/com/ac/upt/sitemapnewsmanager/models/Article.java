@@ -12,7 +12,7 @@ import lombok.*;
 @Entity
 @Table(name = "url", schema = "news")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Url {
+public class Article {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @JsonIgnore
@@ -40,7 +40,7 @@ public class Url {
   @JoinColumn(name = "user_id", referencedColumnName = "id")
   private User user;
 
-  public Url(
+  public Article(
       String loc,
       String lastmod,
       String channelName,

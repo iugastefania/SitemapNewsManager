@@ -2,12 +2,12 @@ package com.ac.upt.sitemapnewsmanager.services;
 
 import com.ac.upt.sitemapnewsmanager.clients.SitemapNewsClient;
 import com.ac.upt.sitemapnewsmanager.exceptions.ArticleNotFoundException;
+import com.ac.upt.sitemapnewsmanager.models.Article;
 import com.ac.upt.sitemapnewsmanager.models.Sitemap;
-import com.ac.upt.sitemapnewsmanager.models.Url;
 import com.ac.upt.sitemapnewsmanager.models.User;
-import com.ac.upt.sitemapnewsmanager.payloads.requests.UrlRequest;
+import com.ac.upt.sitemapnewsmanager.payloads.requests.ArticleRequest;
+import com.ac.upt.sitemapnewsmanager.repositories.ArticleRepository;
 import com.ac.upt.sitemapnewsmanager.repositories.SitemapRepository;
-import com.ac.upt.sitemapnewsmanager.repositories.UrlRepository;
 import com.ac.upt.sitemapnewsmanager.repositories.UserRepository;
 import com.ctc.wstx.stax.WstxInputFactory;
 import com.ctc.wstx.stax.WstxOutputFactory;
@@ -18,7 +18,6 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -41,7 +40,7 @@ import org.springframework.stereotype.Service;
 public class ArticleService {
   SitemapRepository sitemapRepository;
 
-  UrlRepository urlRepository;
+  ArticleRepository articleRepository;
 
   SitemapNewsClient sitemapNewsClient;
 
@@ -63,34 +62,34 @@ public class ArticleService {
   @Autowired
   public ArticleService(
       SitemapRepository sitemapRepository,
-      UrlRepository urlRepository,
+      ArticleRepository articleRepository,
       SitemapNewsClient sitemapNewsClient,
       UserRepository userRepository) {
     this.sitemapRepository = sitemapRepository;
-    this.urlRepository = urlRepository;
+    this.articleRepository = articleRepository;
     this.sitemapNewsClient = sitemapNewsClient;
     this.userRepository = userRepository;
   }
 
-  public void updateArticle(Url article) {
-    Optional<Url> byLoc = urlRepository.findByLoc(article.getLoc());
+  public void updateArticle(Article article) {
+    Optional<Article> byLoc = articleRepository.findByLoc(article.getLoc());
     if (byLoc.isPresent()) {
-      Url existingArticle = byLoc.get();
+      Article existingArticle = byLoc.get();
       existingArticle.setChannelName(article.getChannelName());
       existingArticle.setDescription(article.getDescription());
       existingArticle.setThumbnail(article.getThumbnail());
       existingArticle.setLastmod(article.getLastmod());
       existingArticle.setTitle(article.getTitle());
       existingArticle.setUser(article.getUser());
-      urlRepository.save(existingArticle);
+      articleRepository.save(existingArticle);
     } else {
       throw new ArticleNotFoundException(
           "Article with loc: " + article.getLoc() + " was not found.");
     }
   }
 
-  public Url getArticle(String loc) {
-    Optional<Url> byLoc = urlRepository.findByLoc(loc);
+  public Article getArticle(String loc) {
+    Optional<Article> byLoc = articleRepository.findByLoc(loc);
     if (byLoc.isPresent()) {
       return byLoc.get();
     } else {
@@ -99,88 +98,88 @@ public class ArticleService {
   }
 
   public void deleteArticle(String loc) {
-    Optional<Url> byLoc = urlRepository.findByLoc(loc);
+    Optional<Article> byLoc = articleRepository.findByLoc(loc);
     if (byLoc.isPresent()) {
-      urlRepository.deleteById(byLoc.get().getId());
+      articleRepository.deleteById(byLoc.get().getId());
     } else {
       throw new ArticleNotFoundException("Article with loc: " + loc + " was not found.");
     }
   }
 
-  //    public List<UrlResponse> getAllArticlesByChannel(String channelName) {
-  //        List<Url> urls = new ArrayList<>();
-  //        List<UrlResponse> urlResponses = new ArrayList<>();
-  //        urlRepository.findAllByChannelName(channelName).forEach(urls::add);
-  //        urls.forEach(x -> urlResponses.add(new UrlResponse(x.getId(), x.getLoc(),
+  //    public List<ArticleResponse> getAllArticlesByChannel(String channelName) {
+  //        List<Article> urls = new ArrayList<>();
+  //        List<ArticleResponse> urlResponses = new ArrayList<>();
+  //        articleRepository.findAllByChannelName(channelName).forEach(urls::add);
+  //        urls.forEach(x -> urlResponses.add(new ArticleResponse(x.getId(), x.getLoc(),
   // x.getLastmod(), x.getChannelName(), x.getTitle(), x.getDescription(), x.getThumbnail(),
   // x.getUser())));
   //        return urlResponses;
   //    }
 
-  public List<Url> getAllArticlesByChannel(String channelName) {
-    return urlRepository.findAllByChannelName(channelName);
+  public List<Article> getAllArticlesByChannel(String channelName) {
+    return articleRepository.findAllByChannelName(channelName);
   }
 
-  public Url addArticle(UrlRequest urlRequest) throws Exception {
-    Optional<User> user = userRepository.findByUsername(urlRequest.getUser());
+  public Article addArticle(ArticleRequest articleRequest) throws Exception {
+    Optional<User> user = userRepository.findByUsername(articleRequest.getUser());
     if (user.isPresent()) {
-      Optional<Url> existingArticle = urlRepository.findByLoc(urlRequest.getLoc());
+      Optional<Article> existingArticle = articleRepository.findByLoc(articleRequest.getLoc());
       if (existingArticle.isPresent()) {
         throw new IllegalArgumentException(
-            "Article with URL: " + urlRequest.getLoc() + " already exists.");
+            "Article with URL: " + articleRequest.getLoc() + " already exists.");
       } else {
         User u = user.get();
-        Url entity =
-            new Url(
-                urlRequest.getLoc(),
-                urlRequest.getLastmod(),
-                urlRequest.getChannelName(),
-                urlRequest.getTitle(),
-                urlRequest.getDescription(),
-                urlRequest.getThumbnail(),
+        Article entity =
+            new Article(
+                articleRequest.getLoc(),
+                articleRequest.getLastmod(),
+                articleRequest.getChannelName(),
+                articleRequest.getTitle(),
+                articleRequest.getDescription(),
+                articleRequest.getThumbnail(),
                 u);
-        urlRepository.save(entity);
+        articleRepository.save(entity);
         return entity;
       }
     } else throw new Exception("Invalid user");
   }
 
-  public Url addArticleToChannel(String channelName, UrlRequest urlRequest) throws Exception {
-    Optional<User> user = userRepository.findByUsername(urlRequest.getUser());
+  public Article addArticleToChannel(String channelName, ArticleRequest articleRequest) throws Exception {
+    Optional<User> user = userRepository.findByUsername(articleRequest.getUser());
     if (user.isPresent()) {
-      Optional<Url> existingArticle = urlRepository.findByLoc(urlRequest.getLoc());
+      Optional<Article> existingArticle = articleRepository.findByLoc(articleRequest.getLoc());
       if (existingArticle.isPresent()) {
         throw new IllegalArgumentException(
-            "Article with URL: " + urlRequest.getLoc() + " already exists.");
+            "Article with URL: " + articleRequest.getLoc() + " already exists.");
       } else {
         User u = user.get();
-        Url entity =
-            new Url(
-                urlRequest.getLoc(),
-                urlRequest.getLastmod(),
+        Article entity =
+            new Article(
+                articleRequest.getLoc(),
+                articleRequest.getLastmod(),
                 channelName,
-                urlRequest.getTitle(),
-                urlRequest.getDescription(),
-                urlRequest.getThumbnail(),
+                articleRequest.getTitle(),
+                articleRequest.getDescription(),
+                articleRequest.getThumbnail(),
                 u);
-        urlRepository.save(entity);
+        articleRepository.save(entity);
         return entity;
       }
     } else throw new Exception("Invalid user");
   }
 
   //
-  public void updateArticleInChannel(String channelName, Url article) {
-    Optional<Url> existingArticle =
-        urlRepository.findByChannelNameAndLoc(channelName, article.getLoc());
+  public void updateArticleInChannel(String channelName, Article article) {
+    Optional<Article> existingArticle =
+        articleRepository.findByChannelNameAndLoc(channelName, article.getLoc());
     if (existingArticle.isPresent()) {
-      Url updatedArticle = existingArticle.get();
+      Article updatedArticle = existingArticle.get();
       updatedArticle.setThumbnail(article.getThumbnail());
       updatedArticle.setDescription(article.getDescription());
       updatedArticle.setLastmod(article.getLastmod());
       updatedArticle.setTitle(article.getTitle());
       //            existingArticle.setUser(article.getUser());
-      urlRepository.save(updatedArticle);
+      articleRepository.save(updatedArticle);
     } else {
       throw new ArticleNotFoundException(
           "Article with URL: "
@@ -192,9 +191,9 @@ public class ArticleService {
   }
 
   public void deleteArticleFromChannel(String channelName, String loc) {
-    Optional<Url> existingArticle = urlRepository.findByChannelNameAndLoc(channelName, loc);
+    Optional<Article> existingArticle = articleRepository.findByChannelNameAndLoc(channelName, loc);
     if (existingArticle.isPresent()) {
-      urlRepository.delete(existingArticle.get());
+      articleRepository.delete(existingArticle.get());
     } else {
       throw new ArticleNotFoundException(
           "Article with URL: " + loc + " and channel name: " + channelName + " was not found.");
@@ -202,20 +201,20 @@ public class ArticleService {
   }
 
   public List<String> getAllChannelNames() {
-    List<Url> urls = urlRepository.findAll();
-    return urls.stream().map(Url::getChannelName).distinct().collect(Collectors.toList());
+    List<Article> articles = articleRepository.findAll();
+    return articles.stream().map(Article::getChannelName).distinct().collect(Collectors.toList());
   }
 
-  public List<Url> getAllUrls() {
-    return urlRepository.findAll();
+  public List<Article> getAllUrls() {
+    return articleRepository.findAll();
   }
 
   public Long countUrlsByChannel(String channelName) {
-    return urlRepository.countAllByChannelName(channelName);
+    return articleRepository.countAllByChannelName(channelName);
   }
 
   public String getLatestLastmodByChannel(String channelName) {
-    return urlRepository.findLatestLastmodByChannelName(channelName);
+    return articleRepository.findLatestLastmodByChannelName(channelName);
   }
 
   @Scheduled(fixedDelay = 300000)
@@ -288,23 +287,23 @@ public class ArticleService {
                       sitemapUrl.lastIndexOf("/sitemap"));
               log.info("Article mapping for channel: " + channelName + " has started.");
               String urlStringResponse = getStringResponseFromUrl(sitemapUrl);
-              List<Url> urlList;
+              List<Article> articleList;
               try {
-                urlList = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Url>>() {});
+                articleList = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Article>>() {});
               } catch (JsonProcessingException e) {
                 log.error("Failed to parse the URL response for channel: " + channelName, e);
                 return null;
               }
-              urlList =
-                  urlList.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
-              urlList.forEach(url -> url.setChannelName(channelName));
+              articleList =
+                  articleList.stream().filter(article -> article.getLoc() != null).collect(Collectors.toList());
+              articleList.forEach(article -> article.setChannelName(channelName));
 
-              List<CompletableFuture<List<Url>>> futures =
-                  urlList.stream()
-                      .map(url -> extractDataFromUrlAsync(url, executorService))
+              List<CompletableFuture<List<Article>>> futures =
+                  articleList.stream()
+                      .map(article -> extractDataFromUrlAsync(article, executorService))
                       .collect(Collectors.toList());
 
-              CompletableFuture<List<Url>> combinedFuture =
+              CompletableFuture<List<Article>> combinedFuture =
                   CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
                       .thenApply(
                           v ->
@@ -313,7 +312,7 @@ public class ArticleService {
                                   .collect(Collectors.toList()));
 
               return combinedFuture
-                  .thenAccept(updatedUrls -> urlRepository.saveAll(updatedUrls))
+                  .thenAccept(updatedUrls -> articleRepository.saveAll(updatedUrls))
                   .thenRun(
                       () -> log.info("Article mapping for channel:" + channelName + " has ended."))
                   .exceptionally(
@@ -326,11 +325,11 @@ public class ArticleService {
         .thenCompose(Function.identity());
   }
 
-  private CompletableFuture<List<Url>> extractDataFromUrlAsync(
-      Url url, ExecutorService executorService) {
+  private CompletableFuture<List<Article>> extractDataFromUrlAsync(
+          Article article, ExecutorService executorService) {
     return CompletableFuture.supplyAsync(
         () -> {
-          String urlLoc = url.getLoc();
+          String urlLoc = article.getLoc();
           try {
             // Delay 1 second
             Thread.sleep(1000);
@@ -348,11 +347,11 @@ public class ArticleService {
 
             String thumbnail = document.select("meta[property=og:image]").attr("content");
 
-            url.setTitle(title);
-            url.setDescription(description);
-            url.setThumbnail(thumbnail);
+            article.setTitle(title);
+            article.setDescription(description);
+            article.setThumbnail(thumbnail);
 
-            return Collections.singletonList(url);
+            return Collections.singletonList(article);
           } catch (IOException | InterruptedException e) {
             log.error("Failed to extract data from URL: " + urlLoc, e);
             return Collections.emptyList();
@@ -406,7 +405,7 @@ public class ArticleService {
     }
   }
 
-  public List<Url> getUrlNews(String sitemapName) {
+  public List<Article> getUrlNews(String sitemapName) {
     XMLInputFactory input = new WstxInputFactory();
     input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
     XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
@@ -419,18 +418,18 @@ public class ArticleService {
 //                + "https://www.telegraph.co.uk/".length(),
 //            sitemapName.lastIndexOf("/sitemap"));
     String urlStringResponse = getStringResponseFromUrl(sitemapName);
-    List<Url> urlList;
+    List<Article> articleList;
     try {
-      urlList = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Url>>() {});
+      articleList = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Article>>() {});
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
-    urlList = urlList.stream().filter(url -> url.getLoc() != null).collect(Collectors.toList());
-//    urlList.forEach(url -> url.setChannelName(channelName));
-    return urlList;
+    articleList = articleList.stream().filter(article -> article.getLoc() != null).collect(Collectors.toList());
+//    articleList.forEach(url -> url.setChannelName(channelName));
+    return articleList;
   }
 
-//  public List<Url> getUrlNews(String sitemapName) {
+//  public List<Article> getUrlNews(String sitemapName) {
 //    XMLInputFactory input = new WstxInputFactory();
 //    input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
 //    XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
@@ -438,11 +437,11 @@ public class ArticleService {
 //      return Collections.emptyList();
 //    }
 //    String urlStringResponse = getStringResponseFromUrl(sitemapName);
-//    List<Url> urlList;
+//    List<Article> urlList;
 //    try {
 //      // Read the XML response as a stream
 //      ByteArrayInputStream inputStream = new ByteArrayInputStream(urlStringResponse.getBytes());
-//      urlList = xmlMapper.readValue(inputStream, new TypeReference<List<Url>>() {});
+//      urlList = xmlMapper.readValue(inputStream, new TypeReference<List<Article>>() {});
 //    } catch (IOException e) {
 //      throw new RuntimeException("Failed to parse XML response", e);
 //    }

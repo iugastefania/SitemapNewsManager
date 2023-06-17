@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class UrlResponse {
+public class ArticleResponse {
   private Long id;
 
   private String loc;

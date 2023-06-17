@@ -15,12 +15,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-public class AuthTokenFilter extends OncePerRequestFilter {
+public class CustomAuthTokenFilter extends OncePerRequestFilter {
 
   @Autowired private UserDetailServiceImpl userDetailServiceImpl;
 
   @Autowired private CustomJwtUtils customJwtUtils;
-  private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
+  private static final Logger logger = LoggerFactory.getLogger(CustomAuthTokenFilter.class);
 
   @Override
   protected void doFilterInternal(

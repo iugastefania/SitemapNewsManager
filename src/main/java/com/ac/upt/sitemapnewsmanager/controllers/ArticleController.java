@@ -1,11 +1,10 @@
 package com.ac.upt.sitemapnewsmanager.controllers;
 
+import com.ac.upt.sitemapnewsmanager.models.Article;
 import com.ac.upt.sitemapnewsmanager.models.Sitemap;
-import com.ac.upt.sitemapnewsmanager.models.Url;
-import com.ac.upt.sitemapnewsmanager.payloads.requests.UrlRequest;
+import com.ac.upt.sitemapnewsmanager.payloads.requests.ArticleRequest;
 import com.ac.upt.sitemapnewsmanager.services.ArticleService;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,15 +26,15 @@ public class ArticleController {
   @Autowired ArticleService articleService;
 
   @GetMapping("/getArticle")
-  public ResponseEntity<Url> getArticle(@RequestParam String loc) {
-    Url url = articleService.getArticle(loc);
-    return new ResponseEntity<>(url, HttpStatus.OK);
+  public ResponseEntity<Article> getArticle(@RequestParam String loc) {
+    Article article = articleService.getArticle(loc);
+    return new ResponseEntity<>(article, HttpStatus.OK);
   }
 
   @PostMapping("/addArticle")
-  public ResponseEntity<Url> addArticle(@Valid @RequestBody UrlRequest urlRequest) {
+  public ResponseEntity<Article> addArticle(@Valid @RequestBody ArticleRequest articleRequest) {
     try {
-      Url article = articleService.addArticle(urlRequest);
+      Article article = articleService.addArticle(articleRequest);
       return new ResponseEntity<>(article, HttpStatus.CREATED);
     } catch (Exception e) {
       return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
@@ -43,7 +42,7 @@ public class ArticleController {
   }
 
   @PutMapping("/updateArticle")
-  public ResponseEntity<String> updateArticle(@Valid @RequestBody Url article) {
+  public ResponseEntity<String> updateArticle(@Valid @RequestBody Article article) {
     articleService.updateArticle(article);
     return new ResponseEntity<>(HttpStatus.OK);
   }
@@ -57,17 +56,17 @@ public class ArticleController {
   @GetMapping(
       value = "/getAllArticlesByChannel/{channelName}",
       produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<Url>> getAllArticlesByChannel(@PathVariable String channelName) {
-    List<Url> articles = articleService.getAllArticlesByChannel(channelName);
+  public ResponseEntity<List<Article>> getAllArticlesByChannel(@PathVariable String channelName) {
+    List<Article> articles = articleService.getAllArticlesByChannel(channelName);
     return new ResponseEntity<>(articles, HttpStatus.OK);
   }
   //
   //    @GetMapping(value = "/getAllArticlesByChannel/{channelName}", produces =
   // MediaType.APPLICATION_JSON_VALUE)
-  //    public ResponseEntity<List<UrlResponse>> getAllArticlesByChannel(@PathVariable String
+  //    public ResponseEntity<List<ArticleResponse>> getAllArticlesByChannel(@PathVariable String
   // channelName) {
   //        try {
-  //            List<UrlResponse> allArticlesByChannel =
+  //            List<ArticleResponse> allArticlesByChannel =
   // articleService.getAllArticlesByChannel(channelName);
   //            return new ResponseEntity<>(allArticlesByChannel, HttpStatus.OK);
   //        } catch (Exception e) {
@@ -76,10 +75,10 @@ public class ArticleController {
   // }
 
   @PostMapping("/addArticleToChannel")
-  public ResponseEntity<Url> addArticleToChannel(
-      @RequestParam String channelName, @Valid @RequestBody UrlRequest urlRequest) {
+  public ResponseEntity<Article> addArticleToChannel(
+      @RequestParam String channelName, @Valid @RequestBody ArticleRequest articleRequest) {
     try {
-      Url addedArticle = articleService.addArticleToChannel(channelName, urlRequest);
+      Article addedArticle = articleService.addArticleToChannel(channelName, articleRequest);
       return new ResponseEntity<>(addedArticle, HttpStatus.CREATED);
     } catch (Exception e) {
       return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
@@ -88,7 +87,7 @@ public class ArticleController {
 
   @PutMapping("/updateArticleInChannel")
   public ResponseEntity<String> updateArticleInChannel(
-      @RequestParam String channelName, @RequestBody Url article) {
+      @RequestParam String channelName, @RequestBody Article article) {
     articleService.updateArticleInChannel(channelName, article);
     return new ResponseEntity<>(
         "Article with URL: " + article.getLoc() + " was updated in channel: " + channelName,
@@ -116,15 +115,15 @@ public class ArticleController {
   }
 
   @GetMapping("/getUrlNews")
-  public ResponseEntity<List<Url>> getUrlNews(@RequestParam String sitemapName){
-    List<Url> urlNews = articleService.getUrlNews(sitemapName);
-    return ResponseEntity.ok(urlNews);
+  public ResponseEntity<List<Article>> getUrlNews(@RequestParam String sitemapName){
+    List<Article> articleNews = articleService.getUrlNews(sitemapName);
+    return ResponseEntity.ok(articleNews);
   }
 
   @GetMapping("/getAllUrls")
-  public ResponseEntity<List<Url>> getAllUrls() {
-    List<Url> urls = articleService.getAllUrls();
-    return new ResponseEntity<>(urls, HttpStatus.OK);
+  public ResponseEntity<List<Article>> getAllUrls() {
+    List<Article> articles = articleService.getAllUrls();
+    return new ResponseEntity<>(articles, HttpStatus.OK);
   }
 
   @GetMapping("/countUrlsByChannel")
