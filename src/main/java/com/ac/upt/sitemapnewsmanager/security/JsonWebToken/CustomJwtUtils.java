@@ -13,11 +13,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.WebUtils;
 
 @Component
-public class JwtUtils {
-  private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
+public class CustomJwtUtils {
+  private static final Logger logger = LoggerFactory.getLogger(CustomJwtUtils.class);
 
   @Value("${snm.app.jwtCookieName}")
-  private String jwtCookie;
+  private String jwtCookieName;
 
   @Value("${snm.app.jwtSecret}")
   private String jwtSecret;
@@ -26,7 +26,7 @@ public class JwtUtils {
   private int jwtExpirationMs;
 
   public String getJwtFromCookies(HttpServletRequest request) {
-    Cookie cookie = WebUtils.getCookie(request, jwtCookie);
+    Cookie cookie = WebUtils.getCookie(request, jwtCookieName);
     if (cookie != null) {
       return cookie.getValue();
     } else {
@@ -35,16 +35,16 @@ public class JwtUtils {
   }
 
   public ResponseCookie getCleanJwtCookie() {
-    return ResponseCookie.from(jwtCookie, null).path("/api").build();
+    return ResponseCookie.from(jwtCookieName, null).path("/api").build();
   }
 
-  public String getUserNameFromJwtToken(String token) {
+  public String getUsernameFromJwtToken(String token) {
     return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
   }
 
   public ResponseCookie generateJwtCookie(UserDetail userPrincipal) {
     String jwt = generateTokenFromUsername(userPrincipal.getUsername());
-    return ResponseCookie.from(jwtCookie, jwt)
+    return ResponseCookie.from(jwtCookieName, jwt)
         .path("/api")
         .maxAge(24 * 60 * 60)
         .httpOnly(true)

@@ -19,7 +19,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
   @Autowired private UserDetailServiceImpl userDetailServiceImpl;
 
-  @Autowired private JwtUtils jwtUtils;
+  @Autowired private CustomJwtUtils customJwtUtils;
   private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
   @Override
@@ -28,8 +28,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
       throws ServletException, IOException {
     try {
       String jwt = parseJwt(request);
-      if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
-        String username = jwtUtils.getUserNameFromJwtToken(jwt);
+      if (jwt != null && customJwtUtils.validateJwtToken(jwt)) {
+        String username = customJwtUtils.getUsernameFromJwtToken(jwt);
         UserDetails userDetails = userDetailServiceImpl.loadUserByUsername(username);
 
         UsernamePasswordAuthenticationToken authentication =
@@ -46,6 +46,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
   }
 
   private String parseJwt(HttpServletRequest request) {
-    return jwtUtils.getJwtFromCookies(request);
+    return customJwtUtils.getJwtFromCookies(request);
   }
 }

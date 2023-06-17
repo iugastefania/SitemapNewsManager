@@ -8,7 +8,7 @@ import com.ac.upt.sitemapnewsmanager.payloads.requests.UsersRequest;
 import com.ac.upt.sitemapnewsmanager.payloads.responses.MessageResponse;
 import com.ac.upt.sitemapnewsmanager.payloads.responses.UserResponse;
 import com.ac.upt.sitemapnewsmanager.repositories.UserRepository;
-import com.ac.upt.sitemapnewsmanager.security.JsonWebToken.JwtUtils;
+import com.ac.upt.sitemapnewsmanager.security.JsonWebToken.CustomJwtUtils;
 import com.ac.upt.sitemapnewsmanager.services.UserDetail;
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +37,8 @@ public class UserController {
 
   @Autowired AuthenticationManager authenticationManager;
 
-  @Autowired JwtUtils jwtUtils;
+  @Autowired
+  CustomJwtUtils customJwtUtils;
 
   @PostMapping("/register")
   public ResponseEntity<MessageResponse> registerUser(
@@ -80,7 +81,7 @@ public class UserController {
                 authenticationRequest.getUsername(), authenticationRequest.getPassword()));
     SecurityContextHolder.getContext().setAuthentication(authentication);
     UserDetail userDetails = (UserDetail) authentication.getPrincipal();
-    ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
+    ResponseCookie jwtCookie = customJwtUtils.generateJwtCookie(userDetails);
 
     log.info("Authentication with username: " + authenticationRequest.getUsername());
 
@@ -97,7 +98,7 @@ public class UserController {
   @PostMapping("/logout")
   public ResponseEntity<?> logoutUser() {
     log.info("Logout user");
-    ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
+    ResponseCookie cookie = customJwtUtils.getCleanJwtCookie();
     return ResponseEntity.ok()
         .header(HttpHeaders.SET_COOKIE, cookie.toString())
         .body(new MessageResponse("Signed out!"));
