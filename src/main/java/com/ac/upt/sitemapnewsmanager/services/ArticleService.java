@@ -133,7 +133,7 @@ public class ArticleService {
         User u = user.get();
         Article entity =
             new Article(
-                    articleRequest.getSitemapLoc(),
+                articleRequest.getSitemapId(),
                 articleRequest.getLoc(),
                 articleRequest.getLastmod(),
                 articleRequest.getChannelName(),
@@ -158,7 +158,7 @@ public class ArticleService {
         User u = user.get();
         Article entity =
             new Article(
-                    articleRequest.getSitemapLoc(),
+                articleRequest.getSitemapId(),
                 articleRequest.getLoc(),
                 articleRequest.getLastmod(),
                 channelName,
@@ -301,7 +301,7 @@ public void startSitemapNewsMapping() {
               articleList =
                   articleList.stream().filter(article -> article.getLoc() != null).collect(Collectors.toList());
               articleList.forEach(article -> article.setChannelName(channelName));
-              articleList.forEach(article -> article.setSitemapLoc(sitemapUrl));
+              articleList.forEach(article -> article.setSitemapId(sitemap.getId()));
 
               List<CompletableFuture<List<Article>>> futures =
                   articleList.stream()
@@ -387,7 +387,8 @@ public void startSitemapNewsMapping() {
   }
 
   public List<Article> getUrlNews(String sitemapLoc) {
-    List<Article> articles = articleRepository.findAllBySitemapLoc(sitemapLoc);
+    Long sitemapId = sitemapRepository.findByLoc(sitemapLoc).get().getId();
+    List<Article> articles = articleRepository.findAllBySitemapId(sitemapId);
     if (!articles.isEmpty()) {
       return articles;
     } else {

@@ -7,6 +7,7 @@ import lombok.*;
 @Getter
 @Setter
 public class ArticleRequest {
+  private Long sitemapId;
   private String loc;
   private String lastmod;
   private String channelName;
@@ -14,5 +15,4 @@ public class ArticleRequest {
   private String description;
   private String thumbnail;
   private String user;
-  private String sitemapLoc;
 }

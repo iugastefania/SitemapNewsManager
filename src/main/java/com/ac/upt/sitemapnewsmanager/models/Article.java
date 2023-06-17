@@ -19,8 +19,8 @@ public class Article {
   @JsonIgnore
   private Long id;
 
-  @Column(name = "sitemap_loc")
-  private String sitemapLoc;
+  @Column(name = "sitemapId")
+  private Long sitemapId;
 
   private String loc;
   private String lastmod;
@@ -43,7 +43,7 @@ public class Article {
   private User user;
 
   public Article(
-          String sitemapLoc,
+          Long sitemapId,
           String loc,
           String lastmod,
           String channelName,
@@ -51,7 +51,7 @@ public class Article {
           String description,
           String thumbnail,
           User user) {
-    this.sitemapLoc = sitemapLoc;
+    this.sitemapId = sitemapId;
     this.loc = loc;
     this.lastmod = lastmod;
     this.channelName = channelName;

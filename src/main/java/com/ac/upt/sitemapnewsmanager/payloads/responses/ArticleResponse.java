@@ -9,6 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class ArticleResponse {
+  private Long sitemapId;
   private Long id;
   private String loc;
   private String lastmod;
@@ -17,5 +18,4 @@ public class ArticleResponse {
   private String description;
   private String thumbnail;
   private User user;
-  private String sitemapLoc;
 }

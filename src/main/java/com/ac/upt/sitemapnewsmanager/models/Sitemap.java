@@ -26,7 +26,7 @@ public class Sitemap {
 
   private String channel;
 
-  @OneToMany(mappedBy = "sitemapLoc", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "sitemapId", cascade = CascadeType.ALL)
   @JsonIgnore
   private List<Article> articles = new ArrayList<>();
 
