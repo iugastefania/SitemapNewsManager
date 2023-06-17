@@ -23,4 +23,9 @@ public class Sitemap {
   private String loc;
 
   private String channel;
+
+  public Sitemap(String loc, String channel) {
+    this.loc = loc;
+    this.channel = channel;
+  }
 }
