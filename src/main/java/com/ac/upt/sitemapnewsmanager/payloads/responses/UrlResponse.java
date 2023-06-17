@@ -1,9 +1,7 @@
 package com.ac.upt.sitemapnewsmanager.payloads.responses;
 
-import com.ac.upt.sitemapnewsmanager.models.Sitemap;
 import com.ac.upt.sitemapnewsmanager.models.User;
 import lombok.*;
-
 
 @Getter
 @Setter
@@ -11,19 +9,19 @@ import lombok.*;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class UrlResponse {
-    private Long id;
+  private Long id;
 
-    private String loc;
+  private String loc;
 
-    private String lastmod;
+  private String lastmod;
 
-    private String channelName;
+  private String channelName;
 
-    private String title;
+  private String title;
 
-    private String description;
+  private String description;
 
-    private String thumbnail;
+  private String thumbnail;
 
-    private User user;
+  private User user;
 }

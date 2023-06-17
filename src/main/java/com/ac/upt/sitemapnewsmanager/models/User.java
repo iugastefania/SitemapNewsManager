@@ -1,12 +1,11 @@
 package com.ac.upt.sitemapnewsmanager.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
-
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import lombok.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,36 +13,38 @@ import javax.validation.constraints.Size;
 @Setter
 @Entity
 @Data
-@Table(name = "users", schema = "news",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = "username"),
-                @UniqueConstraint(columnNames = "email")
-        })
+@Table(
+    name = "users",
+    schema = "news",
+    uniqueConstraints = {
+      @UniqueConstraint(columnNames = "username"),
+      @UniqueConstraint(columnNames = "email")
+    })
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonIgnore
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @JsonIgnore
+  private Long id;
 
-    @Column(unique = true, nullable = false, length = 50)
-    @Email
-    private String email;
+  @Column(unique = true, nullable = false, length = 50)
+  @Email
+  private String email;
 
-    @Column(unique = true, nullable = false, length = 20)
-    private String username;
+  @Column(unique = true, nullable = false, length = 20)
+  private String username;
 
-    @NotBlank
-    @Size(max = 120)
-    private String password;
+  @NotBlank
+  @Size(max = 120)
+  private String password;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private Role role;
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private Role role;
 
-    public User(String email, String username, String password, Role role) {
-        this.email = email;
-        this.username = username;
-        this.password = password;
-        this.role = role;
-    }
+  public User(String email, String username, String password, Role role) {
+    this.email = email;
+    this.username = username;
+    this.password = password;
+    this.role = role;
+  }
 }
