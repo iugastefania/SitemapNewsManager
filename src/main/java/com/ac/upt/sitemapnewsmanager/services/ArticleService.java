@@ -108,16 +108,6 @@ public class ArticleService {
     }
   }
 
-  //    public List<ArticleResponse> getAllArticlesByChannel(String channelName) {
-  //        List<Article> urls = new ArrayList<>();
-  //        List<ArticleResponse> urlResponses = new ArrayList<>();
-  //        articleRepository.findAllByChannelName(channelName).forEach(urls::add);
-  //        urls.forEach(x -> urlResponses.add(new ArticleResponse(x.getId(), x.getLoc(),
-  // x.getLastmod(), x.getChannelName(), x.getTitle(), x.getDescription(), x.getThumbnail(),
-  // x.getUser())));
-  //        return urlResponses;
-  //    }
-
   public List<Article> getAllArticlesByChannel(String channelName) {
     return articleRepository.findAllByChannelName(channelName);
   }
@@ -209,7 +199,7 @@ public class ArticleService {
     return articles.stream().map(Article::getChannelName).distinct().collect(Collectors.toList());
   }
 
-  public List<Article> getAllUrls() {
+  public List<Article> getAllArticles() {
     return articleRepository.findAll();
   }
 
@@ -221,8 +211,35 @@ public class ArticleService {
     return articleRepository.findLatestLastmodByChannelName(channelName);
   }
 
-@Scheduled(cron = "0 0 0 * * *", zone = "Europe/Athens")
-public void startSitemapNewsMapping() {
+  public List<Sitemap> getAllSitemaps() {
+    return sitemapRepository.findAll();
+  }
+
+  public List<Article> getUrlNews(String sitemapLoc) {
+    Long sitemapId = sitemapRepository.findByLoc(sitemapLoc).get().getId();
+    List<Article> articles = articleRepository.findAllBySitemapId(sitemapId);
+    if (!articles.isEmpty()) {
+      return articles;
+    } else {
+      XMLInputFactory input = new WstxInputFactory();
+      input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
+      XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
+      if (sitemapsDisallowed.contains(sitemapLoc)) {
+        return Collections.emptyList();
+      }
+      String urlStringResponse = getStringResponseFromUrl(sitemapLoc);
+      try {
+        articles = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Article>>() {});
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException(e);
+      }
+      articles = articles.stream().filter(article -> article.getLoc() != null).collect(Collectors.toList());
+      return articles;
+    }
+  }
+
+  @Scheduled(cron = "0 0 0 * * *", zone = "Europe/Athens")
+  public void startSitemapNewsMapping() {
     if (!isMappingRunning) {
       isMappingRunning = Boolean.TRUE;
       log.info("Sitemap mapping has started.");
@@ -382,30 +399,13 @@ public void startSitemapNewsMapping() {
     }
   }
 
-  public List<Sitemap> getAllSitemaps() {
-    return sitemapRepository.findAll();
-  }
-
-  public List<Article> getUrlNews(String sitemapLoc) {
-    Long sitemapId = sitemapRepository.findByLoc(sitemapLoc).get().getId();
-    List<Article> articles = articleRepository.findAllBySitemapId(sitemapId);
-    if (!articles.isEmpty()) {
-      return articles;
-    } else {
-      XMLInputFactory input = new WstxInputFactory();
-      input.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
-      XmlMapper xmlMapper = new XmlMapper(new XmlFactory(input, new WstxOutputFactory()));
-      if (sitemapsDisallowed.contains(sitemapLoc)) {
-        return Collections.emptyList();
-      }
-      String urlStringResponse = getStringResponseFromUrl(sitemapLoc);
-      try {
-        articles = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Article>>() {});
-      } catch (JsonProcessingException e) {
-        throw new RuntimeException(e);
-      }
-      articles = articles.stream().filter(article -> article.getLoc() != null).collect(Collectors.toList());
-      return articles;
-    }
-  }
+  //    public List<ArticleResponse> getAllArticlesByChannel(String channelName) {
+  //        List<Article> urls = new ArrayList<>();
+  //        List<ArticleResponse> urlResponses = new ArrayList<>();
+  //        articleRepository.findAllByChannelName(channelName).forEach(urls::add);
+  //        urls.forEach(x -> urlResponses.add(new ArticleResponse(x.getId(), x.getLoc(),
+  // x.getLastmod(), x.getChannelName(), x.getTitle(), x.getDescription(), x.getThumbnail(),
+  // x.getUser())));
+  //        return urlResponses;
+  //    }
 }

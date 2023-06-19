@@ -104,7 +104,7 @@ public class UserController {
         .body(new MessageResponse("Signed out!"));
   }
 
-  @GetMapping("/users")
+  @GetMapping("/getAllUsers")
   public ResponseEntity<List<UserResponse>> getAllUsers() {
     List<User> users = userRepository.findAll();
     List<UserResponse> userResponses =
@@ -117,7 +117,7 @@ public class UserController {
     return ResponseEntity.ok(userResponses);
   }
 
-  @DeleteMapping("/users/{username}")
+  @DeleteMapping("/deleteUser/{username}")
   public ResponseEntity<MessageResponse> deleteUser(
       @PathVariable String username, @AuthenticationPrincipal UserDetailsImplementation userDetails) {
     if (userDetails == null || !userDetails.getRole().equals(Role.ADMINISTRATOR)) {
@@ -134,7 +134,7 @@ public class UserController {
     }
   }
 
-  @PutMapping("/users/{username}/role")
+  @PutMapping("/changeUserRole/{username}/role")
   public ResponseEntity<MessageResponse> changeUserRole(
       @PathVariable String username,
       @RequestBody UsersRequest usersRequest,

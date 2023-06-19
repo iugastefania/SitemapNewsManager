@@ -107,9 +107,9 @@ public class ArticleController {
     return ResponseEntity.ok(articleNews);
   }
 
-  @GetMapping("/getAllUrls")
-  public ResponseEntity<List<Article>> getAllUrls() {
-    List<Article> articles = articleService.getAllUrls();
+  @GetMapping("/getAllArticles")
+  public ResponseEntity<List<Article>> getAllArticles() {
+    List<Article> articles = articleService.getAllArticles();
     return new ResponseEntity<>(articles, HttpStatus.OK);
   }
 
