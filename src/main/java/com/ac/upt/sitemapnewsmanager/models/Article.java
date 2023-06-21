@@ -39,7 +39,7 @@ public class Article {
   @JsonBackReference
   @EqualsAndHashCode.Exclude
   @ToString.Exclude
-  @JoinColumn(name = "user_id", referencedColumnName = "id")
+//  @JoinColumn(name = "user_id", referencedColumnName = "id")
   private User user;
 
   public Article(

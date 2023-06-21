@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface SitemapRepository extends JpaRepository<Sitemap, String> {
+public interface SitemapRepository extends JpaRepository<Sitemap, Long> {
     Optional<Sitemap> findByLoc(String loc);
+    Optional<Sitemap> findByChannel(String channel);
 }

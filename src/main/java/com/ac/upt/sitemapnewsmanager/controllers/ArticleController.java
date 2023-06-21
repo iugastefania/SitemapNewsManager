@@ -3,6 +3,7 @@ package com.ac.upt.sitemapnewsmanager.controllers;
 import com.ac.upt.sitemapnewsmanager.models.Article;
 import com.ac.upt.sitemapnewsmanager.models.Sitemap;
 import com.ac.upt.sitemapnewsmanager.payloads.requests.ArticleRequest;
+import com.ac.upt.sitemapnewsmanager.payloads.requests.SitemapRequest;
 import com.ac.upt.sitemapnewsmanager.services.ArticleService;
 
 import java.util.HashMap;
@@ -106,6 +107,25 @@ public class ArticleController {
     List<Article> articleNews = articleService.getUrlNews(sitemapLoc);
     return ResponseEntity.ok(articleNews);
   }
+
+  @PostMapping("/addSitemap")
+  public ResponseEntity<Sitemap> addSitemap(@Valid @RequestBody SitemapRequest sitemapRequest) {
+    Sitemap sitemap = articleService.addSitemap(sitemapRequest);
+    return new ResponseEntity<>(sitemap, HttpStatus.CREATED);
+  }
+  @DeleteMapping("/deleteSitemap")
+  public ResponseEntity<String> deleteSitemap(@RequestParam String loc) {
+    articleService.deleteSitemap(loc);
+    return new ResponseEntity<>("Sitemap with URL: " + loc + " was deleted.", HttpStatus.OK);
+  }
+
+//  @PutMapping("/updateSitemap")
+//  public ResponseEntity<String> updateSitemap(@Valid @RequestBody Sitemap sitemap) {
+//    articleService.updateSitemap(sitemap);
+//    return new ResponseEntity<>(HttpStatus.OK);
+//  }
+
+
 
   @GetMapping("/getAllArticles")
   public ResponseEntity<List<Article>> getAllArticles() {

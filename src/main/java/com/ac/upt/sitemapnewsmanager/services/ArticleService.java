@@ -6,6 +6,7 @@ import com.ac.upt.sitemapnewsmanager.models.Article;
 import com.ac.upt.sitemapnewsmanager.models.Sitemap;
 import com.ac.upt.sitemapnewsmanager.models.User;
 import com.ac.upt.sitemapnewsmanager.payloads.requests.ArticleRequest;
+import com.ac.upt.sitemapnewsmanager.payloads.requests.SitemapRequest;
 import com.ac.upt.sitemapnewsmanager.repositories.ArticleRepository;
 import com.ac.upt.sitemapnewsmanager.repositories.SitemapRepository;
 import com.ac.upt.sitemapnewsmanager.repositories.UserRepository;
@@ -86,7 +87,7 @@ public class ArticleService {
       articleRepository.save(existingArticle);
     } else {
       throw new ArticleNotFoundException(
-          "Article with loc: " + article.getLoc() + " was not found.");
+          "Article with URL: " + article.getLoc() + " was not found.");
     }
   }
 
@@ -95,7 +96,7 @@ public class ArticleService {
     if (byLoc.isPresent()) {
       return byLoc.get();
     } else {
-      throw new ArticleNotFoundException("Article with loc: " + loc + " was not found.");
+      throw new ArticleNotFoundException("Article with URL: " + loc + " was not found.");
     }
   }
 
@@ -104,7 +105,7 @@ public class ArticleService {
     if (byLoc.isPresent()) {
       articleRepository.deleteById(byLoc.get().getId());
     } else {
-      throw new ArticleNotFoundException("Article with loc: " + loc + " was not found.");
+      throw new ArticleNotFoundException("Article with URL: " + loc + " was not found.");
     }
   }
 
@@ -399,6 +400,42 @@ public class ArticleService {
     }
   }
 
+  public Sitemap addSitemap(SitemapRequest sitemapRequest) {
+    Optional<Sitemap> existingArticle = sitemapRepository.findByLoc(sitemapRequest.getLoc());
+    if (existingArticle.isPresent()) {
+      throw new IllegalArgumentException(
+              "Sitemap with URL: " + sitemapRequest.getLoc() + " already exists.");
+    } else {
+      Sitemap entity =
+              new Sitemap(
+                      sitemapRequest.getLoc(),
+                      sitemapRequest.getChannel());
+      sitemapRepository.save(entity);
+      return entity;
+      }
+    }
+  public void deleteSitemap(String loc) {
+    Optional<Sitemap> byLoc = sitemapRepository.findByLoc(loc);
+    if (byLoc.isPresent()) {
+      sitemapRepository.deleteById(byLoc.get().getId());
+    } else {
+      throw new ArticleNotFoundException("Sitemap with URL: " + loc + " was not found.");
+    }
+  }
+
+//  public void updateSitemap(Sitemap sitemap) {
+//    Optional<Sitemap> byLoc = sitemapRepository.findByLoc(sitemap.getLoc());
+//    if (byLoc.isPresent()) {
+//      Sitemap existingSitemap = byLoc.get();
+//      existingSitemap.setChannel(sitemap.getChannel());
+//      sitemapRepository.save(existingSitemap);
+//    } else {
+//      throw new ArticleNotFoundException(
+//              "Sitemap with URL: " + sitemap.getLoc() + " was not found.");
+//    }
+//  }
+
+
   //    public List<ArticleResponse> getAllArticlesByChannel(String channelName) {
   //        List<Article> urls = new ArrayList<>();
   //        List<ArticleResponse> urlResponses = new ArrayList<>();
@@ -409,3 +446,5 @@ public class ArticleService {
   //        return urlResponses;
   //    }
 }
+
+

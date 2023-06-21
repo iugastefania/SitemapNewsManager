@@ -26,7 +26,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
   @Autowired private UserDetailsServiceImplementation userDetailsServiceImplementation;
-  @Autowired private CustomAuthEntryPoint customAuthEntryPoint;
+  @Autowired private CustomAuthEntryPoint unauthorizedHandler;
 
   @Bean
   public CustomAuthTokenFilter authenticationJwtTokenFilter() {
@@ -72,7 +72,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .csrf()
         .disable()
         .exceptionHandling()
-        .authenticationEntryPoint(customAuthEntryPoint)
+        .authenticationEntryPoint(unauthorizedHandler)
         .and()
         .sessionManagement()
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
