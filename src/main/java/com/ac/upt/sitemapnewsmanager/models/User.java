@@ -7,6 +7,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -40,6 +43,10 @@ public class User {
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private Role role;
+
+  @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL)
+  @JsonIgnore
+  private List<Article> articles = new ArrayList<>();
 
   public User(String email, String username, String password, Role role) {
     this.email = email;

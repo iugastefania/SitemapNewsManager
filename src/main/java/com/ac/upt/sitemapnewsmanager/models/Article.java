@@ -1,7 +1,5 @@
 package com.ac.upt.sitemapnewsmanager.models;
 
-import com.ac.upt.sitemapnewsmanager.payloads.requests.ArticleRequest;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import javax.persistence.*;
@@ -35,12 +33,8 @@ public class Article {
   @Column(columnDefinition = "text")
   private String thumbnail;
 
-  @ManyToOne(optional = true, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-  @JsonBackReference
-  @EqualsAndHashCode.Exclude
-  @ToString.Exclude
-//  @JoinColumn(name = "user_id", referencedColumnName = "id")
-  private User user;
+  @Column(name = "userId")
+  private Long userId;
 
   public Article(
           Long sitemapId,
@@ -50,7 +44,7 @@ public class Article {
           String title,
           String description,
           String thumbnail,
-          User user) {
+          Long userId) {
     this.sitemapId = sitemapId;
     this.loc = loc;
     this.lastmod = lastmod;
@@ -58,10 +52,6 @@ public class Article {
     this.title = title;
     this.description = description;
     this.thumbnail = thumbnail;
-    this.user = user;
-  }
-
-  public void setUser(User user) {
-    this.user = user;
+    this.userId = userId;
   }
 }

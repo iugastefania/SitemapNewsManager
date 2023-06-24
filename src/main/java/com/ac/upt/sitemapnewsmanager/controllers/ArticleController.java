@@ -54,13 +54,6 @@ public class ArticleController {
     return new ResponseEntity<>("Article with URL: " + loc + " was deleted.", HttpStatus.OK);
   }
 
-  @GetMapping(
-      value = "/getAllArticlesByChannel/{channelName}",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<Article>> getAllArticlesByChannel(@PathVariable String channelName) {
-    List<Article> articles = articleService.getAllArticlesByChannel(channelName);
-    return new ResponseEntity<>(articles, HttpStatus.OK);
-  }
 
   @PostMapping("/addArticleToChannel")
   public ResponseEntity<Article> addArticleToChannel(
@@ -90,22 +83,11 @@ public class ArticleController {
         "Article with URL: " + loc + " was deleted from channel: " + channelName, HttpStatus.OK);
   }
 
-  @GetMapping("/channelNames")
-  public ResponseEntity<List<String>> getAllChannelNames() {
-    List<String> channelNames = articleService.getAllChannelNames();
-    return ResponseEntity.ok(channelNames);
-  }
 
   @GetMapping("/getAllSitemaps")
   public ResponseEntity<List<Sitemap>> getAllSitemaps() {
     List<Sitemap> sitemapNews = articleService.getAllSitemaps();
     return ResponseEntity.ok(sitemapNews);
-  }
-
-  @GetMapping("/getUrlNews")
-  public ResponseEntity<List<Article>> getUrlNews(@RequestParam String sitemapLoc){
-    List<Article> articleNews = articleService.getUrlNews(sitemapLoc);
-    return ResponseEntity.ok(articleNews);
   }
 
   @PostMapping("/addSitemap")
@@ -125,12 +107,30 @@ public class ArticleController {
 //    return new ResponseEntity<>(HttpStatus.OK);
 //  }
 
+  @GetMapping(
+      value = "/getAllArticlesByChannel/{channelName}",
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<Article>> getAllArticlesByChannel(@PathVariable String channelName) {
+    List<Article> articles = articleService.getAllArticlesByChannel(channelName);
+    return new ResponseEntity<>(articles, HttpStatus.OK);
+  }
 
+  @GetMapping("/channelNames")
+  public ResponseEntity<List<String>> getAllChannelNames() {
+    List<String> channelNames = articleService.getAllChannelNames();
+    return ResponseEntity.ok(channelNames);
+  }
 
   @GetMapping("/getAllArticles")
   public ResponseEntity<List<Article>> getAllArticles() {
     List<Article> articles = articleService.getAllArticles();
     return new ResponseEntity<>(articles, HttpStatus.OK);
+  }
+
+  @GetMapping("/getUrlNews")
+  public ResponseEntity<List<Article>> getUrlNews(@RequestParam String sitemapLoc){
+    List<Article> articleNews = articleService.getUrlNews(sitemapLoc);
+    return ResponseEntity.ok(articleNews);
   }
 
   @GetMapping("/countUrlsByChannel")

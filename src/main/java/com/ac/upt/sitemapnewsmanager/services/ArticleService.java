@@ -79,11 +79,13 @@ public class ArticleService {
     if (byLoc.isPresent()) {
       Article existingArticle = byLoc.get();
       existingArticle.setChannelName(article.getChannelName());
+      Optional <Sitemap> sitemap = sitemapRepository.findByChannel(article.getChannelName());
+      sitemap.ifPresent(value -> existingArticle.setSitemapId(value.getId()));
       existingArticle.setDescription(article.getDescription());
       existingArticle.setThumbnail(article.getThumbnail());
       existingArticle.setLastmod(article.getLastmod());
       existingArticle.setTitle(article.getTitle());
-      existingArticle.setUser(article.getUser());
+      existingArticle.setUserId(article.getUserId());
       articleRepository.save(existingArticle);
     } else {
       throw new ArticleNotFoundException(
@@ -119,23 +121,30 @@ public class ArticleService {
       Optional<Article> existingArticle = articleRepository.findByLoc(articleRequest.getLoc());
       if (existingArticle.isPresent()) {
         throw new IllegalArgumentException(
-            "Article with URL: " + articleRequest.getLoc() + " already exists.");
+                "Article with URL: " + articleRequest.getLoc() + " already exists.");
       } else {
-        User u = user.get();
+        String channelName = articleRequest.getChannelName();
+        Optional<Sitemap> sitemap = sitemapRepository.findByChannel(channelName);
+        if (sitemap.isPresent()) {
         Article entity =
-            new Article(
-                articleRequest.getSitemapId(),
-                articleRequest.getLoc(),
-                articleRequest.getLastmod(),
-                articleRequest.getChannelName(),
-                articleRequest.getTitle(),
-                articleRequest.getDescription(),
-                articleRequest.getThumbnail(),
-                u);
+                new Article(
+                        sitemap.get().getId(),
+                        articleRequest.getLoc(),
+                        articleRequest.getLastmod(),
+                        channelName,
+                        articleRequest.getTitle(),
+                        articleRequest.getDescription(),
+                        articleRequest.getThumbnail(),
+                        user.get().getId());
         articleRepository.save(entity);
         return entity;
+        } else {
+          throw new IllegalArgumentException("No sitemap found for channel: " + channelName);
+        }
       }
-    } else throw new Exception("Invalid user");
+    } else {
+      throw new Exception("Invalid user");
+    }
   }
 
   public Article addArticleToChannel(String channelName, ArticleRequest articleRequest) throws Exception {
@@ -146,7 +155,6 @@ public class ArticleService {
         throw new IllegalArgumentException(
             "Article with URL: " + articleRequest.getLoc() + " already exists.");
       } else {
-        User u = user.get();
         Article entity =
             new Article(
                 articleRequest.getSitemapId(),
@@ -156,24 +164,24 @@ public class ArticleService {
                 articleRequest.getTitle(),
                 articleRequest.getDescription(),
                 articleRequest.getThumbnail(),
-                u);
+                user.get().getId());
         articleRepository.save(entity);
         return entity;
       }
     } else throw new Exception("Invalid user");
   }
 
-  //
+
   public void updateArticleInChannel(String channelName, Article article) {
     Optional<Article> existingArticle =
         articleRepository.findByChannelNameAndLoc(channelName, article.getLoc());
     if (existingArticle.isPresent()) {
       Article updatedArticle = existingArticle.get();
       updatedArticle.setThumbnail(article.getThumbnail());
+      updatedArticle.setChannelName(article.getChannelName());
       updatedArticle.setDescription(article.getDescription());
       updatedArticle.setLastmod(article.getLastmod());
       updatedArticle.setTitle(article.getTitle());
-      //            existingArticle.setUser(article.getUser());
       articleRepository.save(updatedArticle);
     } else {
       throw new ArticleNotFoundException(
@@ -280,7 +288,6 @@ public class ArticleService {
                 .map(sitemap -> processSitemapAsync(sitemap, xmlMapper, executorService))
                 .collect(Collectors.toList());
 
-        // wait for all futures to complete
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
         executorService.shutdown();
@@ -320,6 +327,7 @@ public class ArticleService {
                   articleList.stream().filter(article -> article.getLoc() != null).collect(Collectors.toList());
               articleList.forEach(article -> article.setChannelName(channelName));
               articleList.forEach(article -> article.setSitemapId(sitemap.getId()));
+              articleList.forEach(article -> article.setUserId(1L));
 
               List<CompletableFuture<List<Article>>> futures =
                   articleList.stream()
