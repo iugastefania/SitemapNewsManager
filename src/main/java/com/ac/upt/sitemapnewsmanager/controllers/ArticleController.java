@@ -5,7 +5,6 @@ import com.ac.upt.sitemapnewsmanager.models.Sitemap;
 import com.ac.upt.sitemapnewsmanager.payloads.requests.ArticleRequest;
 import com.ac.upt.sitemapnewsmanager.payloads.requests.SitemapRequest;
 import com.ac.upt.sitemapnewsmanager.services.ArticleService;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +53,6 @@ public class ArticleController {
     return new ResponseEntity<>("Article with URL: " + loc + " was deleted.", HttpStatus.OK);
   }
 
-
   @PostMapping("/addArticleToChannel")
   public ResponseEntity<Article> addArticleToChannel(
       @RequestParam String channelName, @Valid @RequestBody ArticleRequest articleRequest) {
@@ -83,7 +81,6 @@ public class ArticleController {
         "Article with URL: " + loc + " was deleted from channel: " + channelName, HttpStatus.OK);
   }
 
-
   @GetMapping("/getAllSitemaps")
   public ResponseEntity<List<Sitemap>> getAllSitemaps() {
     List<Sitemap> sitemapNews = articleService.getAllSitemaps();
@@ -95,17 +92,18 @@ public class ArticleController {
     Sitemap sitemap = articleService.addSitemap(sitemapRequest);
     return new ResponseEntity<>(sitemap, HttpStatus.CREATED);
   }
+
   @DeleteMapping("/deleteSitemap")
   public ResponseEntity<String> deleteSitemap(@RequestParam String loc) {
     articleService.deleteSitemap(loc);
     return new ResponseEntity<>("Sitemap with URL: " + loc + " was deleted.", HttpStatus.OK);
   }
 
-//  @PutMapping("/updateSitemap")
-//  public ResponseEntity<String> updateSitemap(@Valid @RequestBody Sitemap sitemap) {
-//    articleService.updateSitemap(sitemap);
-//    return new ResponseEntity<>(HttpStatus.OK);
-//  }
+  //  @PutMapping("/updateSitemap")
+  //  public ResponseEntity<String> updateSitemap(@Valid @RequestBody Sitemap sitemap) {
+  //    articleService.updateSitemap(sitemap);
+  //    return new ResponseEntity<>(HttpStatus.OK);
+  //  }
 
   @GetMapping(
       value = "/getAllArticlesByChannel/{channelName}",
@@ -128,7 +126,7 @@ public class ArticleController {
   }
 
   @GetMapping("/getUrlNews")
-  public ResponseEntity<List<Article>> getUrlNews(@RequestParam String sitemapLoc){
+  public ResponseEntity<List<Article>> getUrlNews(@RequestParam String sitemapLoc) {
     List<Article> articleNews = articleService.getUrlNews(sitemapLoc);
     return ResponseEntity.ok(articleNews);
   }
@@ -159,23 +157,5 @@ public class ArticleController {
     thread.start();
     return new ResponseEntity<>("Sitemap news mapping has been started.", HttpStatus.OK);
   }
-  //    @GetMapping("/latestArticleByChannel")
-  //    public ResponseEntity<String> latestArticleByChannel(@RequestParam String channelName) {
-  //        String latestLastmod = articleService.getLatestLastmodByChannel(channelName);
-  //        return new ResponseEntity<>(latestLastmod, HttpStatus.OK);
-  //    }
 
-  //
-  //    @GetMapping(value = "/getAllArticlesByChannel/{channelName}", produces =
-  // MediaType.APPLICATION_JSON_VALUE)
-  //    public ResponseEntity<List<ArticleResponse>> getAllArticlesByChannel(@PathVariable String
-  // channelName) {
-  //        try {
-  //            List<ArticleResponse> allArticlesByChannel =
-  // articleService.getAllArticlesByChannel(channelName);
-  //            return new ResponseEntity<>(allArticlesByChannel, HttpStatus.OK);
-  //        } catch (Exception e) {
-  //            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-  //        }
-  // }
 }

@@ -13,5 +13,4 @@ public class SitemapRequest {
 
   private String loc;
   private String channel;
-
 }

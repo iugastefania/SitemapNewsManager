@@ -37,8 +37,7 @@ public class UserController {
 
   @Autowired AuthenticationManager authenticationManager;
 
-  @Autowired
-  CustomJwtUtils customJwtUtils;
+  @Autowired CustomJwtUtils customJwtUtils;
 
   @PostMapping("/register")
   public ResponseEntity<MessageResponse> registerUser(
@@ -46,7 +45,8 @@ public class UserController {
       @AuthenticationPrincipal UserDetailsImplementation userDetails) {
     log.info("Register user with username: " + registerRequest.getUsername());
 
-    if ( (registerRequest.getRole() == Role.ADMINISTRATOR || registerRequest.getRole() == Role.EDITOR )
+    if ((registerRequest.getRole() == Role.ADMINISTRATOR
+            || registerRequest.getRole() == Role.EDITOR)
         && (userDetails == null || !userDetails.getRole().equals(Role.ADMINISTRATOR))) {
       return ResponseEntity.badRequest()
           .body(new MessageResponse("Only ADMINISTRATOR can create an ADMINISTRATOR user."));
@@ -80,7 +80,8 @@ public class UserController {
             new UsernamePasswordAuthenticationToken(
                 authenticationRequest.getUsername(), authenticationRequest.getPassword()));
     SecurityContextHolder.getContext().setAuthentication(authentication);
-    UserDetailsImplementation userDetails = (UserDetailsImplementation) authentication.getPrincipal();
+    UserDetailsImplementation userDetails =
+        (UserDetailsImplementation) authentication.getPrincipal();
     ResponseCookie jwtCookie = customJwtUtils.generateJwtCookie(userDetails);
 
     log.info("Authentication with username: " + authenticationRequest.getUsername());
@@ -119,7 +120,8 @@ public class UserController {
 
   @DeleteMapping("/deleteUser/{username}")
   public ResponseEntity<MessageResponse> deleteUser(
-      @PathVariable String username, @AuthenticationPrincipal UserDetailsImplementation userDetails) {
+      @PathVariable String username,
+      @AuthenticationPrincipal UserDetailsImplementation userDetails) {
     if (userDetails == null || !userDetails.getRole().equals(Role.ADMINISTRATOR)) {
       return ResponseEntity.badRequest()
           .body(new MessageResponse("Only an ADMINISTRATOR can delete a user."));

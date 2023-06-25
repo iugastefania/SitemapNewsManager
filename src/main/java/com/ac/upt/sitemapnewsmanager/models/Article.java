@@ -37,14 +37,14 @@ public class Article {
   private Long userId;
 
   public Article(
-          Long sitemapId,
-          String loc,
-          String lastmod,
-          String channelName,
-          String title,
-          String description,
-          String thumbnail,
-          Long userId) {
+      Long sitemapId,
+      String loc,
+      String lastmod,
+      String channelName,
+      String title,
+      String description,
+      String thumbnail,
+      Long userId) {
     this.sitemapId = sitemapId;
     this.loc = loc;
     this.lastmod = lastmod;

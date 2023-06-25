@@ -16,7 +16,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.dataformat.xml.XmlFactory;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -79,7 +78,7 @@ public class ArticleService {
     if (byLoc.isPresent()) {
       Article existingArticle = byLoc.get();
       existingArticle.setChannelName(article.getChannelName());
-      Optional <Sitemap> sitemap = sitemapRepository.findByChannel(article.getChannelName());
+      Optional<Sitemap> sitemap = sitemapRepository.findByChannel(article.getChannelName());
       sitemap.ifPresent(value -> existingArticle.setSitemapId(value.getId()));
       existingArticle.setDescription(article.getDescription());
       existingArticle.setThumbnail(article.getThumbnail());
@@ -121,23 +120,23 @@ public class ArticleService {
       Optional<Article> existingArticle = articleRepository.findByLoc(articleRequest.getLoc());
       if (existingArticle.isPresent()) {
         throw new IllegalArgumentException(
-                "Article with URL: " + articleRequest.getLoc() + " already exists.");
+            "Article with URL: " + articleRequest.getLoc() + " already exists.");
       } else {
         String channelName = articleRequest.getChannelName();
         Optional<Sitemap> sitemap = sitemapRepository.findByChannel(channelName);
         if (sitemap.isPresent()) {
-        Article entity =
-                new Article(
-                        sitemap.get().getId(),
-                        articleRequest.getLoc(),
-                        articleRequest.getLastmod(),
-                        channelName,
-                        articleRequest.getTitle(),
-                        articleRequest.getDescription(),
-                        articleRequest.getThumbnail(),
-                        user.get().getId());
-        articleRepository.save(entity);
-        return entity;
+          Article entity =
+              new Article(
+                  sitemap.get().getId(),
+                  articleRequest.getLoc(),
+                  articleRequest.getLastmod(),
+                  channelName,
+                  articleRequest.getTitle(),
+                  articleRequest.getDescription(),
+                  articleRequest.getThumbnail(),
+                  user.get().getId());
+          articleRepository.save(entity);
+          return entity;
         } else {
           throw new IllegalArgumentException("No sitemap found for channel: " + channelName);
         }
@@ -147,7 +146,8 @@ public class ArticleService {
     }
   }
 
-  public Article addArticleToChannel(String channelName, ArticleRequest articleRequest) throws Exception {
+  public Article addArticleToChannel(String channelName, ArticleRequest articleRequest)
+      throws Exception {
     Optional<User> user = userRepository.findByUsername(articleRequest.getUser());
     if (user.isPresent()) {
       Optional<Article> existingArticle = articleRepository.findByLoc(articleRequest.getLoc());
@@ -170,7 +170,6 @@ public class ArticleService {
       }
     } else throw new Exception("Invalid user");
   }
-
 
   public void updateArticleInChannel(String channelName, Article article) {
     Optional<Article> existingArticle =
@@ -242,7 +241,10 @@ public class ArticleService {
       } catch (JsonProcessingException e) {
         throw new RuntimeException(e);
       }
-      articles = articles.stream().filter(article -> article.getLoc() != null).collect(Collectors.toList());
+      articles =
+          articles.stream()
+              .filter(article -> article.getLoc() != null)
+              .collect(Collectors.toList());
       return articles;
     }
   }
@@ -318,13 +320,16 @@ public class ArticleService {
               String urlStringResponse = getStringResponseFromUrl(sitemapUrl);
               List<Article> articleList;
               try {
-                articleList = xmlMapper.readValue(urlStringResponse, new TypeReference<List<Article>>() {});
+                articleList =
+                    xmlMapper.readValue(urlStringResponse, new TypeReference<List<Article>>() {});
               } catch (JsonProcessingException e) {
                 log.error("Failed to parse the URL response for channel: " + channelName, e);
                 return null;
               }
               articleList =
-                  articleList.stream().filter(article -> article.getLoc() != null).collect(Collectors.toList());
+                  articleList.stream()
+                      .filter(article -> article.getLoc() != null)
+                      .collect(Collectors.toList());
               articleList.forEach(article -> article.setChannelName(channelName));
               articleList.forEach(article -> article.setSitemapId(sitemap.getId()));
               articleList.forEach(article -> article.setUserId(1L));
@@ -357,12 +362,11 @@ public class ArticleService {
   }
 
   private CompletableFuture<List<Article>> extractDataFromUrlAsync(
-          Article article, ExecutorService executorService) {
+      Article article, ExecutorService executorService) {
     return CompletableFuture.supplyAsync(
         () -> {
           String urlLoc = article.getLoc();
           try {
-            // Delay 1 second
             Thread.sleep(1000);
 
             Document document = Jsoup.parse(new URL(urlLoc), 10000);
@@ -393,7 +397,6 @@ public class ArticleService {
 
   public String getStringResponseFromUrl(String url) {
     try {
-      // Delay 1 second
       Thread.sleep(1000);
 
       HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
@@ -412,16 +415,14 @@ public class ArticleService {
     Optional<Sitemap> existingArticle = sitemapRepository.findByLoc(sitemapRequest.getLoc());
     if (existingArticle.isPresent()) {
       throw new IllegalArgumentException(
-              "Sitemap with URL: " + sitemapRequest.getLoc() + " already exists.");
+          "Sitemap with URL: " + sitemapRequest.getLoc() + " already exists.");
     } else {
-      Sitemap entity =
-              new Sitemap(
-                      sitemapRequest.getLoc(),
-                      sitemapRequest.getChannel());
+      Sitemap entity = new Sitemap(sitemapRequest.getLoc(), sitemapRequest.getChannel());
       sitemapRepository.save(entity);
       return entity;
-      }
     }
+  }
+
   public void deleteSitemap(String loc) {
     Optional<Sitemap> byLoc = sitemapRepository.findByLoc(loc);
     if (byLoc.isPresent()) {
@@ -431,28 +432,17 @@ public class ArticleService {
     }
   }
 
-//  public void updateSitemap(Sitemap sitemap) {
-//    Optional<Sitemap> byLoc = sitemapRepository.findByLoc(sitemap.getLoc());
-//    if (byLoc.isPresent()) {
-//      Sitemap existingSitemap = byLoc.get();
-//      existingSitemap.setChannel(sitemap.getChannel());
-//      sitemapRepository.save(existingSitemap);
-//    } else {
-//      throw new ArticleNotFoundException(
-//              "Sitemap with URL: " + sitemap.getLoc() + " was not found.");
-//    }
-//  }
-
-
-  //    public List<ArticleResponse> getAllArticlesByChannel(String channelName) {
-  //        List<Article> urls = new ArrayList<>();
-  //        List<ArticleResponse> urlResponses = new ArrayList<>();
-  //        articleRepository.findAllByChannelName(channelName).forEach(urls::add);
-  //        urls.forEach(x -> urlResponses.add(new ArticleResponse(x.getId(), x.getLoc(),
-  // x.getLastmod(), x.getChannelName(), x.getTitle(), x.getDescription(), x.getThumbnail(),
-  // x.getUser())));
-  //        return urlResponses;
+  //  public void updateSitemap(Sitemap sitemap) {
+  //    Optional<Sitemap> byLoc = sitemapRepository.findByLoc(sitemap.getLoc());
+  //    if (byLoc.isPresent()) {
+  //      Sitemap existingSitemap = byLoc.get();
+  //      existingSitemap.setChannel(sitemap.getChannel());
+  //      sitemapRepository.save(existingSitemap);
+  //    } else {
+  //      throw new ArticleNotFoundException(
+  //              "Sitemap with URL: " + sitemap.getLoc() + " was not found.");
   //    }
+  //  }
+
+
 }
-
-
