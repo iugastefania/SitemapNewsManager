@@ -157,5 +157,4 @@ public class ArticleController {
     thread.start();
     return new ResponseEntity<>("Sitemap news mapping has been started.", HttpStatus.OK);
   }
-
 }

@@ -45,12 +45,12 @@ public class UserController {
       @AuthenticationPrincipal UserDetailsImplementation userDetails) {
     log.info("Register user with username: " + registerRequest.getUsername());
 
-    if ((registerRequest.getRole() == Role.ADMINISTRATOR
-            || registerRequest.getRole() == Role.EDITOR)
-        && (userDetails == null || !userDetails.getRole().equals(Role.ADMINISTRATOR))) {
-      return ResponseEntity.badRequest()
-          .body(new MessageResponse("Only ADMINISTRATOR can create an ADMINISTRATOR user."));
-    }
+//    if ((registerRequest.getRole() == Role.ADMINISTRATOR
+//            || registerRequest.getRole() == Role.EDITOR)
+//        && (userDetails == null || !userDetails.getRole().equals(Role.ADMINISTRATOR))) {
+//      return ResponseEntity.badRequest()
+//          .body(new MessageResponse("Only ADMINISTRATOR can create an ADMINISTRATOR user."));
+//    }
 
     if (Boolean.TRUE.equals(userRepository.existsByEmail(registerRequest.getEmail()))) {
       return ResponseEntity.badRequest().body(new MessageResponse("Email already used!"));
