@@ -206,6 +206,7 @@ public class ArticleService {
 //    List<Article> articles = articleRepository.findAll();
 //    return articles.stream().map(Article::getChannelName).distinct().collect(Collectors.toList());
 //  }
+
 public List<String> getAllChannelNames() {
   List<Sitemap> sitemaps = sitemapRepository.findAll();
   return sitemaps.stream()
@@ -299,22 +300,12 @@ public List<String> getAllChannelNames() {
         sitemapRepository.saveAll(sitemaps);
         log.info("Sitemap mapping has ended.");
         ExecutorService executorService = Executors.newFixedThreadPool(10);
-//        ExecutorService executorService = Executors.newFixedThreadPool(2);
-
-//        List<CompletableFuture<Void>> futures =
-//            sitemaps.stream()
-////                .filter(sitemap -> !sitemapsDisallowed.contains(sitemap.getLoc()))
-//                .map(sitemap -> processSitemapAsync(sitemap, xmlMapper, executorService))
-//                .collect(Collectors.toList());
-        List<Sitemap> sitemaps2 = new ArrayList<>();
-        sitemaps2.add(new Sitemap("https://www.telegraph.co.uk/water-polo/sitemap.xml", "water-polo"));
-        sitemaps2.add(new Sitemap("https://www.telegraph.co.uk/bills-and-utilities/sitemap.xml", "bills-and-utilities"));
 
         List<CompletableFuture<Void>> futures =
-                sitemaps2.stream()
-//                .filter(sitemap -> !sitemapsDisallowed.contains(sitemap.getLoc()))
-                      .map(sitemap2 -> processSitemapAsync(sitemap2, xmlMapper, executorService))
-                      .collect(Collectors.toList());
+            sitemaps.stream()
+                .map(sitemap -> processSitemapAsync(sitemap, xmlMapper, executorService))
+                .collect(Collectors.toList());
+
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
         executorService.shutdown();
@@ -392,7 +383,7 @@ public List<String> getAllChannelNames() {
         () -> {
           String urlLoc = article.getLoc();
           try {
-            Thread.sleep(1000);
+            Thread.sleep(5000);
 
             Document document = Jsoup.parse(new URL(urlLoc), 10000);
 
@@ -422,7 +413,7 @@ public List<String> getAllChannelNames() {
 
   public String getStringResponseFromUrl(String url) {
     try {
-      Thread.sleep(100000);
+      Thread.sleep(5000);
 
       HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
       try (InputStream inputStream = connection.getInputStream();
