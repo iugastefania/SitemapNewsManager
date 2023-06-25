@@ -303,7 +303,7 @@ public List<String> getAllChannelNames() {
 
         List<CompletableFuture<Void>> futures =
             sitemaps.stream()
-                .filter(sitemap -> !sitemapsDisallowed.contains(sitemap.getLoc()))
+//                .filter(sitemap -> !sitemapsDisallowed.contains(sitemap.getLoc()))
                 .map(sitemap -> processSitemapAsync(sitemap, xmlMapper, executorService))
                 .collect(Collectors.toList());
 
