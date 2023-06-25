@@ -282,7 +282,8 @@ public class ArticleService {
                 .collect(Collectors.toList());
         sitemapRepository.saveAll(sitemaps);
         log.info("Sitemap mapping has ended.");
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
+//        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        ExecutorService executorService = Executors.newFixedThreadPool(5);
 
         List<CompletableFuture<Void>> futures =
             sitemaps.stream()
