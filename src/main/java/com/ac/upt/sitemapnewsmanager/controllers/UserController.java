@@ -45,12 +45,12 @@ public class UserController {
       @AuthenticationPrincipal UserDetailsImplementation userDetails) {
     log.info("Register user with username: " + registerRequest.getUsername());
 
-//    if ((registerRequest.getRole() == Role.ADMINISTRATOR
-//            || registerRequest.getRole() == Role.EDITOR)
-//        && (userDetails == null || !userDetails.getRole().equals(Role.ADMINISTRATOR))) {
-//      return ResponseEntity.badRequest()
-//          .body(new MessageResponse("Only ADMINISTRATOR can create an ADMINISTRATOR user."));
-//    }
+    if ((registerRequest.getRole() == Role.ADMINISTRATOR
+            || registerRequest.getRole() == Role.EDITOR)
+        && (userDetails == null || !userDetails.getRole().equals(Role.ADMINISTRATOR))) {
+      return ResponseEntity.badRequest()
+          .body(new MessageResponse("Only ADMINISTRATOR can create an ADMINISTRATOR user."));
+    }
 
     if (Boolean.TRUE.equals(userRepository.existsByEmail(registerRequest.getEmail()))) {
       return ResponseEntity.badRequest().body(new MessageResponse("Email already used!"));
@@ -122,10 +122,10 @@ public class UserController {
   public ResponseEntity<MessageResponse> deleteUser(
       @PathVariable String username,
       @AuthenticationPrincipal UserDetailsImplementation userDetails) {
-//    if (userDetails == null || !userDetails.getRole().equals(Role.ADMINISTRATOR)) {
-//      return ResponseEntity.badRequest()
-//          .body(new MessageResponse("Only an ADMINISTRATOR can delete a user."));
-//    }
+    if (userDetails == null || !userDetails.getRole().equals(Role.ADMINISTRATOR)) {
+      return ResponseEntity.badRequest()
+          .body(new MessageResponse("Only an ADMINISTRATOR can delete a user."));
+    }
     Optional<User> userOptional = userRepository.findByUsername(username);
     if (userOptional.isPresent()) {
       User user = userOptional.get();
@@ -141,10 +141,10 @@ public class UserController {
       @PathVariable String username,
       @RequestBody UsersRequest usersRequest,
       @AuthenticationPrincipal UserDetailsImplementation userDetails) {
-//    if (userDetails == null || !userDetails.getRole().equals(Role.ADMINISTRATOR)) {
-//      return ResponseEntity.badRequest()
-//          .body(new MessageResponse("Only an ADMINISTRATOR can change user roles."));
-//    }
+    if (userDetails == null || !userDetails.getRole().equals(Role.ADMINISTRATOR)) {
+      return ResponseEntity.badRequest()
+          .body(new MessageResponse("Only an ADMINISTRATOR can change user roles."));
+    }
 
     Optional<User> userOptional = userRepository.findByUsername(username);
     if (userOptional.isPresent()) {
