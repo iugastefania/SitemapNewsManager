@@ -13,7 +13,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class ArticleExceptionHandler extends ResponseEntityExceptionHandler {
 
   @ExceptionHandler(value = {ArticleNotFoundException.class})
-  protected ResponseEntity sitemapNotFoundException(
+  protected ResponseEntity articleNotFoundException(
       RuntimeException runtimeException, WebRequest webRequest) {
     return handleExceptionInternal(
         runtimeException,
