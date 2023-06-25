@@ -298,8 +298,8 @@ public List<String> getAllChannelNames() {
                 .collect(Collectors.toList());
         sitemapRepository.saveAll(sitemaps);
         log.info("Sitemap mapping has ended.");
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
-//        ExecutorService executorService = Executors.newFixedThreadPool(2);
+//        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
 
         List<CompletableFuture<Void>> futures =
             sitemaps.stream()
