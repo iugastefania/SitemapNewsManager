@@ -321,15 +321,15 @@ public class ArticleServiceTest {
   @Test
   public void getAllChannelNames() {
     // given
-    List<Article> articleList = new ArrayList<>();
-    articleList.add(article);
-    when(articleRepository.findAll()).thenReturn(articleList);
+    List<Sitemap> sitemapList = new ArrayList<>();
+    sitemapList.add(sitemap);
+    when(sitemapRepository.findAll()).thenReturn(sitemapList);
 
     // when
     List<String> result = articleService.getAllChannelNames();
 
     // then
-    verify(articleRepository, times(1)).findAll();
+    verify(sitemapRepository, times(1)).findAll();
     assertEquals(Collections.singletonList("mockChannel"), result);
   }
 
