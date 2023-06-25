@@ -202,10 +202,17 @@ public class ArticleService {
     }
   }
 
-  public List<String> getAllChannelNames() {
-    List<Article> articles = articleRepository.findAll();
-    return articles.stream().map(Article::getChannelName).distinct().collect(Collectors.toList());
-  }
+//  public List<String> getAllChannelNames() {
+//    List<Article> articles = articleRepository.findAll();
+//    return articles.stream().map(Article::getChannelName).distinct().collect(Collectors.toList());
+//  }
+public List<String> getAllChannelNames() {
+  List<Sitemap> sitemaps = sitemapRepository.findAll();
+  return sitemaps.stream()
+          .map(Sitemap::getChannel)
+          .distinct()
+          .collect(Collectors.toList());
+}
 
   public List<Article> getAllArticles() {
     return articleRepository.findAll();
@@ -266,6 +273,8 @@ public class ArticleService {
           log.error("Failed to parse the sitemap response.", e);
           return;
         }
+        sitemaps.removeIf(sitemap -> sitemapsDisallowed.contains(sitemap.getLoc()));
+
         sitemaps =
             sitemaps.stream()
                 .filter(sitemap -> sitemap.getLoc() != null)
@@ -367,38 +376,38 @@ public class ArticleService {
     return CompletableFuture.supplyAsync(
         () -> {
           String urlLoc = article.getLoc();
-//          try {
-//            Thread.sleep(1000);
-//
-//            Document document = Jsoup.parse(new URL(urlLoc), 10000);
-//
-//            String title = document.select("meta[property=og:title]").attr("content");
-//            String description = document.select("meta[name=description]").attr("content");
-//            if (description.isEmpty()) {
-//              String[] pathSegments = urlLoc.split("/");
-//              String desiredString = pathSegments[pathSegments.length - 1].replace("-", " ");
-//              description =
-//                  desiredString.substring(0, 1).toUpperCase() + desiredString.substring(1);
-//            }
-//
-//            String thumbnail = document.select("meta[property=og:image]").attr("content");
+          try {
+            Thread.sleep(1000);
+
+            Document document = Jsoup.parse(new URL(urlLoc), 10000);
+
+            String title = document.select("meta[property=og:title]").attr("content");
+            String description = document.select("meta[name=description]").attr("content");
+            if (description.isEmpty()) {
+              String[] pathSegments = urlLoc.split("/");
+              String desiredString = pathSegments[pathSegments.length - 1].replace("-", " ");
+              description =
+                  desiredString.substring(0, 1).toUpperCase() + desiredString.substring(1);
+            }
+
+            String thumbnail = document.select("meta[property=og:image]").attr("content");
 
             article.setTitle("title");
             article.setDescription("description");
             article.setThumbnail("thumbnail");
 
             return Collections.singletonList(article);
-//          } catch (IOException | InterruptedException e) {
-//            log.error("Failed to extract data from URL: " + urlLoc, e);
-//            return Collections.emptyList();
-//          }
+          } catch (IOException | InterruptedException e) {
+            log.error("Failed to extract data from URL: " + urlLoc, e);
+            return Collections.emptyList();
+          }
         },
         executorService);
   }
 
   public String getStringResponseFromUrl(String url) {
     try {
-      Thread.sleep(1000);
+      Thread.sleep(100000);
 
       HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
       try (InputStream inputStream = connection.getInputStream();
