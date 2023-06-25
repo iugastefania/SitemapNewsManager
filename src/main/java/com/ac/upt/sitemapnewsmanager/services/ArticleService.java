@@ -311,11 +311,10 @@ public List<String> getAllChannelNames() {
         sitemaps2.add(new Sitemap("https://www.telegraph.co.uk/bills-and-utilities/sitemap.xml", "bills-and-utilities"));
 
         List<CompletableFuture<Void>> futures =
-                sitemaps.stream()
+                sitemaps2.stream()
 //                .filter(sitemap -> !sitemapsDisallowed.contains(sitemap.getLoc()))
-                        .map(sitemap2 -> processSitemapAsync(sitemap2, xmlMapper, executorService))
-                        .collect(Collectors.toList());
-
+                      .map(sitemap2 -> processSitemapAsync(sitemap2, xmlMapper, executorService))
+                      .collect(Collectors.toList());
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
         executorService.shutdown();
