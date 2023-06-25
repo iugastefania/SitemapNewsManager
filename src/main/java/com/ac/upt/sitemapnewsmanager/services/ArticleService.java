@@ -282,8 +282,8 @@ public class ArticleService {
                 .collect(Collectors.toList());
         sitemapRepository.saveAll(sitemaps);
         log.info("Sitemap mapping has ended.");
-//        ExecutorService executorService = Executors.newFixedThreadPool(10);
-        ExecutorService executorService = Executors.newFixedThreadPool(2);
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+//        ExecutorService executorService = Executors.newFixedThreadPool(2);
 
         List<CompletableFuture<Void>> futures =
             sitemaps.stream()
@@ -333,7 +333,7 @@ public class ArticleService {
                       .collect(Collectors.toList());
               articleList.forEach(article -> article.setChannelName(channelName));
               articleList.forEach(article -> article.setSitemapId(sitemap.getId()));
-              articleList.forEach(article -> article.setUserId(1L));
+//              articleList.forEach(article -> article.setUserId(1L));
 
               List<CompletableFuture<List<Article>>> futures =
                   articleList.stream()
@@ -367,31 +367,31 @@ public class ArticleService {
     return CompletableFuture.supplyAsync(
         () -> {
           String urlLoc = article.getLoc();
-          try {
-            Thread.sleep(1000);
+//          try {
+//            Thread.sleep(1000);
+//
+//            Document document = Jsoup.parse(new URL(urlLoc), 10000);
+//
+//            String title = document.select("meta[property=og:title]").attr("content");
+//            String description = document.select("meta[name=description]").attr("content");
+//            if (description.isEmpty()) {
+//              String[] pathSegments = urlLoc.split("/");
+//              String desiredString = pathSegments[pathSegments.length - 1].replace("-", " ");
+//              description =
+//                  desiredString.substring(0, 1).toUpperCase() + desiredString.substring(1);
+//            }
+//
+//            String thumbnail = document.select("meta[property=og:image]").attr("content");
 
-            Document document = Jsoup.parse(new URL(urlLoc), 10000);
-
-            String title = document.select("meta[property=og:title]").attr("content");
-            String description = document.select("meta[name=description]").attr("content");
-            if (description.isEmpty()) {
-              String[] pathSegments = urlLoc.split("/");
-              String desiredString = pathSegments[pathSegments.length - 1].replace("-", " ");
-              description =
-                  desiredString.substring(0, 1).toUpperCase() + desiredString.substring(1);
-            }
-
-            String thumbnail = document.select("meta[property=og:image]").attr("content");
-
-            article.setTitle(title);
-            article.setDescription(description);
-            article.setThumbnail(thumbnail);
+            article.setTitle("title");
+            article.setDescription("description");
+            article.setThumbnail("thumbnail");
 
             return Collections.singletonList(article);
-          } catch (IOException | InterruptedException e) {
-            log.error("Failed to extract data from URL: " + urlLoc, e);
-            return Collections.emptyList();
-          }
+//          } catch (IOException | InterruptedException e) {
+//            log.error("Failed to extract data from URL: " + urlLoc, e);
+//            return Collections.emptyList();
+//          }
         },
         executorService);
   }
