@@ -273,7 +273,14 @@ public List<String> getAllChannelNames() {
           log.error("Failed to parse the sitemap response.", e);
           return;
         }
-        sitemaps.removeIf(sitemap -> sitemapsDisallowed.contains(sitemap.getLoc()));
+        List<String> existingLocs = sitemapRepository.findAll().stream()
+                .map(Sitemap::getLoc)
+                .collect(Collectors.toList());
+
+        sitemaps.removeIf(sitemap -> {
+          String loc = sitemap.getLoc();
+          return sitemapsDisallowed.contains(loc) || existingLocs.contains(loc);
+        });
 
         sitemaps =
             sitemaps.stream()
