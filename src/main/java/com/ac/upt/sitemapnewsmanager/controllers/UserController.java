@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 @Slf4j
+@CrossOrigin(origins = "http://localhost:4200")
 public class UserController {
   @Autowired UserRepository userRepository;
 
@@ -38,6 +39,12 @@ public class UserController {
   @Autowired AuthenticationManager authenticationManager;
 
   @Autowired CustomJwtUtils customJwtUtils;
+
+  @GetMapping("/getAllUsers")
+  public ResponseEntity<String> endpointForTest() {
+    String message = "Endpoint for test!";
+    return ResponseEntity.ok(message);
+  }
 
   @PostMapping("/register")
   public ResponseEntity<MessageResponse> registerUser(
