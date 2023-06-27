@@ -40,11 +40,6 @@ public class UserController {
 
   @Autowired CustomJwtUtils customJwtUtils;
 
-  @GetMapping("/getAllUsers")
-  public ResponseEntity<String> endpointForTest() {
-    String message = "Endpoint for test!";
-    return ResponseEntity.ok(message);
-  }
 
   @PostMapping("/register")
   public ResponseEntity<MessageResponse> registerUser(
