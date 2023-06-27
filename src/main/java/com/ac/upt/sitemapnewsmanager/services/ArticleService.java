@@ -257,7 +257,7 @@ public List<String> getAllChannelNames() {
     }
   }
 
-  @Scheduled(cron = "30 0 0 * * *", zone = "Europe/Athens")
+  @Scheduled(cron = "0 0 0 * * *", zone = "Europe/Athens")
   public void startSitemapNewsMapping() {
     if (!isMappingRunning) {
       isMappingRunning = Boolean.TRUE;
